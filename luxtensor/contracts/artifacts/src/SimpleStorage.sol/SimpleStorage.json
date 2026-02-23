@@ -1,0 +1,74 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "SimpleStorage",
+  "sourceName": "src/SimpleStorage.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "setter",
+          "type": "address"
+        }
+      ],
+      "name": "ValueSet",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_value",
+          "type": "uint256"
+        }
+      ],
+      "name": "setValue",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "value",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60808060405234602b57600180546001600160a01b03191633179055602a60005560fe90816100318239f35b600080fdfe6080806040526004361015601257600080fd5b60003560e01c9081633fa4f2451460af575080635524107714606857638da5cb5b14603c57600080fd5b3460635760003660031901126063576001546040516001600160a01b039091168152602090f35b600080fd5b3460635760203660031901126063577ff421846e535e82c1fbd6ac49ea86e258f1940223db04456b26480f6f2db9f6a76040600435806000558151908152336020820152a1005b3460635760003660031901126063576020906000548152f3fea2646970667358221220e674be1ccc1b7c46b1019360cbc037fc98ac88743cb229c50156d2a3fe9c4c1764736f6c634300081c0033",
+  "deployedBytecode": "0x6080806040526004361015601257600080fd5b60003560e01c9081633fa4f2451460af575080635524107714606857638da5cb5b14603c57600080fd5b3460635760003660031901126063576001546040516001600160a01b039091168152602090f35b600080fd5b3460635760203660031901126063577ff421846e535e82c1fbd6ac49ea86e258f1940223db04456b26480f6f2db9f6a76040600435806000558151908152336020820152a1005b3460635760003660031901126063576020906000548152f3fea2646970667358221220e674be1ccc1b7c46b1019360cbc037fc98ac88743cb229c50156d2a3fe9c4c1764736f6c634300081c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
