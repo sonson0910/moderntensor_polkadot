@@ -195,7 +195,7 @@ def main():
         result = orchestrator.process_task(
             miner_client=miner_client,
             task=task,
-            model_fn=None,  # Use simulation
+            model_fn=None,  # Auto-detect: Gemini API → fallback
             miner_uid=meta.miners[0].uid if meta.miners else 0,
         )
         print(f"     Output: {len(result.output)} bytes")

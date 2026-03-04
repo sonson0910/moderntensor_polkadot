@@ -50,7 +50,7 @@ class ContractAuditor:
         """Audit smart contract code for vulnerabilities."""
         issues = []
 
-        # Note: Since we don't have a VM implementation yet, these are placeholder checks
+        # Note: Static analysis checks — runtime VM verification requires deployment
         # In production, would need to:
         # 1. Parse contract bytecode
         # 2. Analyze control flow

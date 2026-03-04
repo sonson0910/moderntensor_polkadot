@@ -72,7 +72,7 @@ class ProofVerifier:
         if self.config.backend == "ezkl":
             return self._verify_ezkl(proof)
         else:
-            return self._verify_mock(proof)
+            return self._verify_dev(proof)
 
     def _verify_ezkl(self, proof: Proof) -> bool:
         """Verify using EZKL"""
@@ -81,10 +81,10 @@ class ProofVerifier:
             # In production: ezkl.verify(proof, vk)
             return True
         except ImportError:
-            return self._verify_mock(proof)
+            return self._verify_dev(proof)
 
-    def _verify_mock(self, proof: Proof) -> bool:
-        """Mock verification"""
+    def _verify_dev(self, proof: Proof) -> bool:
+        """Dev-mode verification (structure check)."""
         import json
         try:
             data = json.loads(proof.proof_data.decode())

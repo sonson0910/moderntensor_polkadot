@@ -226,18 +226,18 @@ def run_validator(args):
             if not miner_results:
                 log.info("No fulfilled results this epoch — miners may still be processing")
 
-                # If no real results, evaluate active miners with simulated scores
-                if args.simulate_eval and miners:
-                    log.info("Simulating evaluation for %d active miners...", len(miners))
+                # If no real results, evaluate active miners with auto-detected model
+                if args.auto_eval and miners:
+                    log.info("Auto-evaluating %d active miners...", len(miners))
                     for m in miners:
-                        sim_output = AISubnetOrchestrator._simulate_model(
+                        auto_output = orchestrator._run_auto_model(
                             model_name, task_input,
                         )
                         miner_results.append(MinerResult(
                             miner_address=m.hotkey,
                             miner_uid=m.uid,
                             task_id=task.task_id,
-                            output=sim_output,
+                            output=auto_output,
                             proof_verified=True,
                         ))
 
@@ -314,9 +314,9 @@ Examples:
     parser.add_argument("--response-wait", type=int, default=15, help="Seconds to wait for miner responses")
     parser.add_argument("--task-timeout", type=int, default=100, help="Task timeout in blocks")
     parser.add_argument("--run-epoch", action="store_true", help="Trigger emission epoch after each cycle")
-    parser.add_argument("--simulate-eval", action="store_true", default=True,
-                        help="Simulate evaluation if no real miner responses (default: true)")
-    parser.add_argument("--no-simulate-eval", dest="simulate_eval", action="store_false")
+    parser.add_argument("--auto-eval", action="store_true", default=True,
+                        help="Auto-evaluate miners if no real responses (default: true)")
+    parser.add_argument("--no-auto-eval", dest="auto_eval", action="store_false")
     parser.add_argument("--private-key", default=None, help="Private key (prefer VALIDATOR_PRIVATE_KEY env)")
     parser.add_argument("--deployment-path", default=None, help="Path to deployments JSON")
 

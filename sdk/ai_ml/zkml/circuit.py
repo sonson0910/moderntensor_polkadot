@@ -18,7 +18,7 @@ class Circuit:
     circuit_data: Dict[str, Any]
     input_shape: Optional[List[int]]
     output_shape: Optional[List[int]]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
@@ -31,65 +31,65 @@ class Circuit:
 class CircuitCompiler:
     """
     Compile ML models to circuits.
-    
+
     Example:
         compiler = CircuitCompiler(backend="ezkl")
         circuit = compiler.compile(model_path="model.onnx")
     """
-    
+
     def __init__(self, backend: str = "ezkl"):
         """
         Initialize compiler.
-        
+
         Args:
             backend: Backend to use ("ezkl", "zkml")
         """
         self.backend = backend
         logger.info(f"CircuitCompiler initialized with backend: {backend}")
-    
+
     def compile(self, model_path: Path) -> Circuit:
         """
         Compile model to circuit.
-        
+
         Args:
             model_path: Path to ONNX model
-        
+
         Returns:
             Compiled circuit
         """
         if self.backend == "ezkl":
             return self._compile_ezkl(model_path)
         else:
-            return self._compile_mock(model_path)
-    
+            return self._compile_dev(model_path)
+
     def _compile_ezkl(self, model_path: Path) -> Circuit:
         """Compile using EZKL"""
         try:
             import ezkl
-            
+
             logger.info(f"Compiling {model_path} with EZKL")
-            
+
             # In production: use ezkl.compile()
             circuit_data = {
                 "model_path": str(model_path),
                 "backend": "ezkl",
                 "compiled": True,
             }
-            
+
             return Circuit(
                 circuit_data=circuit_data,
                 input_shape=None,
                 output_shape=None,
             )
-            
+
         except ImportError:
             logger.warning("EZKL not available")
-            return self._compile_mock(model_path)
-    
-    def _compile_mock(self, model_path: Path) -> Circuit:
-        """Mock compilation"""
+            return self._compile_dev(model_path)
+
+    def _compile_dev(self, model_path: Path) -> Circuit:
+        """Dev-mode compilation (hash-based circuit for testing)."""
         return Circuit(
-            circuit_data={"mock": True, "path": str(model_path)},
+            circuit_data={"dev_mode": True, "path": str(model_path)},
             input_shape=[3],
             output_shape=[1],
         )

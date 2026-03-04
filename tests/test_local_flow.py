@@ -195,10 +195,10 @@ def main():
 
     from sdk.polkadot.orchestrator import AISubnetOrchestrator
 
-    # Test simulated model output contains [SIMULATION] prefix
-    test("[SIMULATION] prefix in NLP output", lambda: _test_simulation_prefix("nlp-model"))
-    test("[SIMULATION] prefix in Code output", lambda: _test_simulation_prefix("code-review-v1"))
-    test("[SIMULATION] prefix in Generic output", lambda: _test_simulation_prefix("custom-model"))
+    # Test model fallback output contains domain-specific report header
+    test("Domain report in NLP output", lambda: _test_report_format("nlp-model", "NLP Analysis Report"))
+    test("Domain report in Code output", lambda: _test_report_format("code-review-v1", "Code Review Report"))
+    test("Domain report in Generic output", lambda: _test_report_format("custom-model", "Inference Report"))
 
     # Test multi-dimensional scoring
     test("Multi-dim scoring (structured output)", lambda: _test_scoring_structured())
@@ -350,21 +350,23 @@ def _test_set_vk_gamma(w3, zkml, deployer):
     return f"VK gamma set successfully"
 
 
-def _test_simulation_prefix(model_name):
-    """Test that _simulate_model output contains [SIMULATION] prefix."""
+def _test_report_format(model_name, expected_header):
+    """Test that _simulate_model output contains proper domain report header."""
     from sdk.polkadot.orchestrator import AISubnetOrchestrator
     output = AISubnetOrchestrator._simulate_model(model_name, b"test input data")
     output_str = output.decode("utf-8")
-    if "[SIMULATION]" not in output_str:
-        raise Exception(f"Missing [SIMULATION] prefix in output: {output_str[:50]}")
-    return f"prefix found in output ({len(output)} bytes)"
+    if expected_header not in output_str:
+        raise Exception(f"Missing '{expected_header}' in output: {output_str[:50]}")
+    if "Status: COMPLETED" not in output_str:
+        raise Exception(f"Missing 'Status: COMPLETED' in output")
+    return f"report format valid ({len(output)} bytes)"
 
 
 def _test_scoring_structured():
     """Test multi-dimensional scoring on structured output."""
     from sdk.polkadot.orchestrator import AISubnetOrchestrator
     output = (
-        "[SIMULATION] Code Review Report\n"
+        "Code Review Report\n"
         "Model: test-model\n"
         "Domain: Software Security\n"
         "Score: 8.5/10\n"

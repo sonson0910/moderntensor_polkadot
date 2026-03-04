@@ -906,8 +906,23 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     }
 
     // ═══════════════════════════════════════════════════════
-    // Admin
+    // Admin — Governance Roadmap
     // ═══════════════════════════════════════════════════════
+    //
+    // Phase 1 (Current): Owner-managed via onlyOwner modifier.
+    //   - Suitable for hackathon, testnets, and initial deployment.
+    //   - Owner expected to be a multi-sig (e.g. Gnosis Safe) on mainnet.
+    //
+    // Phase 2 (Planned): DAO Governance via GovernanceModule.
+    //   - Validators with stake > threshold can create proposals.
+    //   - >50% validator stake vote "yes" → execute after timelock.
+    //   - Emergency functions (pause, slash) retain owner access.
+    //   - Implemented via OpenZeppelin Governor + TimelockController.
+    //
+    // Phase 3 (Future): Fully on-chain governance via Polkadot OpenGov.
+    //   - Subnet parameters managed via XCM governance pallets.
+    //   - Cross-chain governance for multi-chain subnet coordination.
+    //
 
     function setSubnetRegistrationCost(uint256 cost) external onlyOwner {
         subnetRegistrationCost = cost;

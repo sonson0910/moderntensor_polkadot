@@ -8,6 +8,8 @@ deployed on Polkadot Hub via pallet-revive EVM.
 from .client import PolkadotClient
 from .config import NetworkConfig, NETWORKS, load_deployment
 from .subnet import SubnetClient
+from .llm_adapter import LocalLLMAdapter
+from .ipfs_client import IPFSClient
 
 __all__ = [
     "PolkadotClient",
@@ -15,4 +17,7 @@ __all__ = [
     "NetworkConfig",
     "NETWORKS",
     "load_deployment",
+    "LocalLLMAdapter",
+    "IPFSClient",
 ]
+

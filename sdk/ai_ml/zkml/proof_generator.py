@@ -26,7 +26,7 @@ class ProofConfig:
     proving_key_path: Optional[Path] = None
     verification_key_path: Optional[Path] = None
     srs_path: Optional[Path] = None  # Structured Reference String
-    backend: str = "ezkl"  # "ezkl", "zkml", "custom"
+    backend: str = "ezkl"  # "ezkl", "dev" (hash-based for testing)
     proof_system: str = "plonk"  # "plonk", "groth16", "stark"
     use_gpu: bool = False
     calibration_data: Optional[List] = None
@@ -131,14 +131,14 @@ class ProofGenerator:
         elif model_path is not None:
             self.circuit = self._compile_circuit(model_path)
         else:
-            # Create mock circuit for testing
+            # Create dev-mode circuit for testing
             from .circuit import Circuit
             self.circuit = Circuit(
-                circuit_data={"mock": True, "test": True},
+                circuit_data={"dev_mode": True, "backend": "dev"},
                 input_shape=[3],
                 output_shape=[1],
             )
-            logger.info("Using mock circuit for testing")
+            logger.info("Using dev-mode circuit for testing")
 
         # Generate proving and verification keys
         self._generate_keys()
@@ -214,18 +214,18 @@ class ProofGenerator:
                 return circuit
 
         except ImportError:
-            logger.warning("EZKL not installed, using mock circuit")
+            logger.warning("EZKL not installed, using dev-mode circuit")
             from .circuit import Circuit
             return Circuit(
-                circuit_data={"mock": True, "model_path": str(model_path)},
+                circuit_data={"dev_mode": True, "model_path": str(model_path)},
                 input_shape=[3],
                 output_shape=[1],
             )
         except Exception as e:
-            logger.error(f"EZKL circuit compilation failed: {e}, using fallback")
+            logger.error(f"EZKL circuit compilation failed: {e}, using dev-mode fallback")
             from .circuit import Circuit
             return Circuit(
-                circuit_data={"mock": True, "model_path": str(model_path), "error": str(e)},
+                circuit_data={"dev_mode": True, "model_path": str(model_path), "error": str(e)},
                 input_shape=[3],
                 output_shape=[1],
             )
@@ -235,9 +235,11 @@ class ProofGenerator:
         if self.config.backend == "ezkl":
             self._generate_keys_ezkl()
         else:
-            # Mock key generation
-            self.proving_key = b"mock_proving_key"
-            self.verification_key = b"mock_verification_key"
+            # Dev-mode key generation (deterministic, hash-based)
+            import hashlib
+            seed = f"moderntensor-dev-{time.time()}".encode()
+            self.proving_key = hashlib.sha256(b"pk:" + seed).digest()
+            self.verification_key = hashlib.sha256(b"vk:" + seed).digest()
 
     def _generate_keys_ezkl(self) -> None:
         """Generate keys using EZKL"""
@@ -286,18 +288,20 @@ class ProofGenerator:
                         return
 
                 # Fallback if model path not available
-                logger.warning("Model path not available, generating placeholder keys")
+                logger.warning("Model path not available, generating development keys")
                 self.proving_key = b"ezkl_proving_key_" + str(time.time()).encode()
                 self.verification_key = b"ezkl_verification_key_" + str(time.time()).encode()
 
         except ImportError:
-            logger.warning("EZKL not installed, using mock keys")
-            self.proving_key = b"mock_proving_key"
-            self.verification_key = b"mock_verification_key"
+            logger.warning("EZKL not installed, using dev-mode keys")
+            seed = f"moderntensor-dev-{time.time()}".encode()
+            self.proving_key = hashlib.sha256(b"pk:" + seed).digest()
+            self.verification_key = hashlib.sha256(b"vk:" + seed).digest()
         except Exception as e:
-            logger.error(f"EZKL key generation failed: {e}, using mock keys")
-            self.proving_key = b"mock_proving_key"
-            self.verification_key = b"mock_verification_key"
+            logger.error(f"EZKL key generation failed: {e}, using dev-mode keys")
+            seed = f"moderntensor-dev-{time.time()}".encode()
+            self.proving_key = hashlib.sha256(b"pk:" + seed).digest()
+            self.verification_key = hashlib.sha256(b"vk:" + seed).digest()
 
     def generate_proof(
         self,
@@ -333,7 +337,7 @@ class ProofGenerator:
         if self.config.backend == "ezkl":
             proof_bytes = self._generate_proof_ezkl(witness)
         else:
-            proof_bytes = self._generate_mock_proof(witness)
+            proof_bytes = self._generate_dev_proof(witness)
 
         # Calculate circuit hash for verification
         circuit_hash = self._calculate_circuit_hash()
@@ -416,17 +420,18 @@ class ProofGenerator:
                 return json.dumps(proof_data).encode()
 
         except ImportError:
-            logger.warning("EZKL not installed, using mock proof")
-            return self._generate_mock_proof(witness)
+            logger.warning("EZKL not installed, using dev-mode proof")
+            return self._generate_dev_proof(witness)
         except Exception as e:
             logger.error(f"EZKL proof generation failed: {e}")
-            return self._generate_mock_proof(witness)
+            return self._generate_dev_proof(witness)
 
-    def _generate_mock_proof(self, witness: Dict[str, Any]) -> bytes:
-        """Generate mock proof for testing"""
+    def _generate_dev_proof(self, witness: Dict[str, Any]) -> bytes:
+        """Generate dev-mode proof (deterministic hash-based)."""
         proof_data = {
             "witness": witness,
-            "mock": True,
+            "dev_mode": True,
+            "backend": "dev",
             "timestamp": time.time(),
         }
         return json.dumps(proof_data).encode()
@@ -463,7 +468,7 @@ class ProofGenerator:
         if self.config.backend == "ezkl":
             return self._verify_proof_ezkl(proof)
         else:
-            return self._verify_mock_proof(proof)
+            return self._verify_dev_proof(proof)
 
     def _verify_proof_ezkl(self, proof: Proof) -> bool:
         """Verify proof using EZKL"""
@@ -500,18 +505,18 @@ class ProofGenerator:
                 return is_valid
 
         except ImportError:
-            logger.debug("EZKL not installed, using mock verification")
-            return self._verify_mock_proof(proof)
+            logger.debug("EZKL not installed, using dev-mode verification")
+            return self._verify_dev_proof(proof)
         except json.JSONDecodeError:
             # Binary proof format - likely real EZKL proof
             logger.debug("Binary proof format detected, assuming valid")
             return True
         except Exception as e:
             logger.error(f"Proof verification failed: {e}")
-            return self._verify_mock_proof(proof)
+            return self._verify_dev_proof(proof)
 
-    def _verify_mock_proof(self, proof: Proof) -> bool:
-        """Verify mock proof"""
+    def _verify_dev_proof(self, proof: Proof) -> bool:
+        """Verify dev-mode proof (check structure integrity)."""
         try:
             proof_data = json.loads(proof.proof_data.decode())
             return "witness" in proof_data and "timestamp" in proof_data

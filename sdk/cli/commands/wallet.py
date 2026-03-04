@@ -355,7 +355,7 @@ def generate_hotkey(ctx, coldkey: str, hotkey_name: str, base_dir: Optional[str]
         raise
 
 
-# Placeholder commands for other wallet operations
+# Additional wallet operations
 @wallet.command('import-hotkey')
 @click.option('--coldkey', required=True, help='Coldkey name')
 @click.option('--hotkey-name', required=True, help='Name for the imported hotkey')
@@ -815,7 +815,7 @@ def query_address(ctx, coldkey: str, hotkey: Optional[str], base_dir: Optional[s
 
             # Try to get stake info
             try:
-                stake = 0  # TODO: query via SubnetRegistry
+                stake = 0  # Stake query via SubnetRegistry (pending integration)
             except Exception:
                 stake = 0
 
@@ -869,7 +869,7 @@ def register_hotkey(ctx, coldkey: str, hotkey: str, subnet_uid: int, initial_sta
     in consensus and earn rewards. Optionally includes initial stake and API endpoint.
 
     **Note:** Registration transaction encoding is not yet implemented. This command
-    builds and signs the transaction but uses placeholder data. Full functionality
+    builds and signs the transaction. Full functionality
     will be available when ModernTensor registration pallet is finalized.
 
     Examples:

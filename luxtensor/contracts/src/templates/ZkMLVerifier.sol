@@ -180,7 +180,10 @@ contract ZkMLVerifier is Ownable {
 
     /**
      * @notice Verify RISC Zero STARK proof via precompile
-     * @dev Calls RISC Zero verifier precompile when deployed
+     * @dev STARK verification requires RISC Zero verifier precompile which is
+     *      NOT available on Polkadot Hub (pallet-revive). Use Groth16 or Dev mode instead.
+     *      Polkadot pallet-revive supports: ECRecover, SHA256, RIPEMD160, Identity,
+     *      ModExp, Bn128Add, Bn128Mul, Bn128Pairing (EIP-197 at 0x08).
      */
     function _verifyStarkProof(
         ProofData memory proof
@@ -210,9 +213,9 @@ contract ZkMLVerifier is Ownable {
             return abi.decode(result, (bool));
         }
 
-        // Fallback: REJECT proof when precompile is not deployed
-        // Cannot verify STARK proofs without the RISC Zero verifier
-        return false;
+        // RISC Zero precompile NOT deployed on this chain (e.g. Polkadot Hub)
+        // Use Groth16 (Bn128Pairing at 0x08) or Dev mode instead
+        revert("STARK not supported: use Groth16 or Dev mode on Polkadot Hub");
     }
 
     /**

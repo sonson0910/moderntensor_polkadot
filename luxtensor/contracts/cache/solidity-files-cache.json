@@ -1527,8 +1527,8 @@
       ]
     },
     "/Users/sonson/Documents/code/polkadot/hackathon/moderntensor/luxtensor/contracts/src/templates/ZkMLVerifier.sol": {
-      "lastModificationDate": 1771838453367,
-      "contentHash": "d711f3178de2318993a5760620eb025e",
+      "lastModificationDate": 1771843515851,
+      "contentHash": "6468a627a0424b063a08358a9ec1dbe7",
       "sourceName": "src/templates/ZkMLVerifier.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1890,8 +1890,8 @@
       ]
     },
     "/Users/sonson/Documents/code/polkadot/hackathon/moderntensor/luxtensor/contracts/src/SubnetRegistry.sol": {
-      "lastModificationDate": 1771672515303,
-      "contentHash": "0ea002d7386a2c1cfe5c694c69f8e697",
+      "lastModificationDate": 1771843630295,
+      "contentHash": "6fd36ef9b5b6fe7efe674dab878ec3cc",
       "sourceName": "src/SubnetRegistry.sol",
       "solcConfig": {
         "version": "0.8.28",

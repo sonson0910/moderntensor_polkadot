@@ -2,9 +2,9 @@
 ZkMLClient — ZkMLVerifier wrapper.
 
 On-chain verification of zkML proofs:
-- STARK: Full RISC Zero STARK verification (via precompile)
-- Groth16: SNARK-wrapped proofs (smaller, faster)
-- Dev: Development mode (hash-based, for testing)
+- Groth16: SNARK-wrapped proofs using Bn128Pairing (EIP-197 at 0x08) — fully supported on Polkadot Hub
+- Dev: Development mode (hash-based, for testing/hackathon demos)
+- STARK: Full RISC Zero STARK verification — NOT available on Polkadot Hub (requires RISC Zero precompile)
 """
 
 from __future__ import annotations

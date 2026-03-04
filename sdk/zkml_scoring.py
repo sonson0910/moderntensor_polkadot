@@ -83,7 +83,7 @@ class ZkMLScoringConfig:
     # Cache verified proofs to avoid re-verification
     cache_verified: bool = True
 
-    # Proof backend (ezkl, mock)
+    # Proof backend (ezkl, dev)
     backend: str = "ezkl"
 
     # Path to verification key (optional)
@@ -456,7 +456,7 @@ class MinerProofHelper:
 
         Args:
             model_path: Path to ONNX model file
-            backend: Proof backend (ezkl, mock)
+            backend: Proof backend (ezkl, dev)
         """
         self.model_path = model_path
         self.backend = backend

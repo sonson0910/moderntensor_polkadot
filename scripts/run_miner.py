@@ -7,8 +7,11 @@ tasks from the Oracle, processes them with a model function, generates
 zkML proofs, and submits results on-chain.
 
 Usage:
-    # With default simulated model
-    python scripts/run_miner.py --netuid 1 --stake 100
+    # With Gemini API (recommended)
+    GEMINI_API_KEY=your_key python scripts/run_miner.py --netuid 1 --stake 100
+
+    # With explicit Gemini key
+    python scripts/run_miner.py --netuid 1 --gemini-key AIza...
 
     # With custom model endpoint
     python scripts/run_miner.py --netuid 1 --stake 100 --model-url http://localhost:8000/infer
@@ -18,6 +21,7 @@ Usage:
 
 Environment:
     MINER_PRIVATE_KEY   – Wallet private key (required)
+    GEMINI_API_KEY      – Google Gemini API key (recommended for real AI)
     DEPLOYMENT_PATH     – Path to deployments JSON (default: luxtensor/contracts/deployments-polkadot.json)
 """
 
@@ -57,10 +61,24 @@ def make_http_model(url: str):
     return model_fn
 
 
-def make_simulation_model():
-    """Use the SDK's built-in simulation model."""
+def make_fallback_model():
+    """Use the SDK's built-in deterministic model (when no API key is set)."""
     from sdk.polkadot.orchestrator import AISubnetOrchestrator
     return lambda input_data: AISubnetOrchestrator._simulate_model("generic-ai", input_data)
+
+
+def make_gemini_model(api_key: str):
+    """Create a model function powered by Google Gemini API."""
+    from sdk.polkadot.llm_adapter import LocalLLMAdapter
+
+    adapter = LocalLLMAdapter.from_gemini(api_key=api_key)
+    log.info("🤖 Gemini AI model ready: %s", adapter)
+
+    def model_fn(input_data: bytes) -> bytes:
+        prompt = input_data.decode("utf-8", errors="replace")
+        return adapter.infer(prompt)
+
+    return model_fn
 
 
 # ═══════════════════════════════════════════════════════════
@@ -134,9 +152,13 @@ def run_miner(args):
     if args.model_url:
         log.info("Using HTTP model endpoint: %s", args.model_url)
         model_fn = make_http_model(args.model_url)
+    elif args.gemini_key or os.environ.get("GEMINI_API_KEY"):
+        gemini_key = args.gemini_key or os.environ.get("GEMINI_API_KEY")
+        log.info("🤖 Using Google Gemini API for real AI inference")
+        model_fn = make_gemini_model(gemini_key)
     else:
-        log.info("Using built-in simulation model (pass --model-url for real AI)")
-        model_fn = make_simulation_model()
+        log.info("Using built-in deterministic model (set GEMINI_API_KEY for real AI)")
+        model_fn = make_fallback_model()
 
     # ── Create orchestrator ──
     orchestrator = client.orchestrator(netuid=netuid)
@@ -247,10 +269,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Quick start with simulation
-  MINER_PRIVATE_KEY=0x... python scripts/run_miner.py --netuid 1
+  # Quick start with Gemini API (recommended)
+  GEMINI_API_KEY=AIza... MINER_PRIVATE_KEY=0x... python scripts/run_miner.py --netuid 1
 
-  # With real model
+  # With explicit key
+  python scripts/run_miner.py --netuid 1 --gemini-key AIza...
+
+  # With custom HTTP model
   MINER_PRIVATE_KEY=0x... python scripts/run_miner.py --netuid 1 --model-url http://localhost:8000/infer
 
   # Local Hardhat testing
@@ -261,7 +286,8 @@ Examples:
     parser.add_argument("--rpc-url", default=None, help="Override RPC URL")
     parser.add_argument("--netuid", type=int, default=1, help="Subnet UID to mine on (default: 1)")
     parser.add_argument("--stake", type=float, default=0, help="MDT to stake on registration (default: 0)")
-    parser.add_argument("--model-url", default=None, help="HTTP endpoint for AI model (default: simulation)")
+    parser.add_argument("--model-url", default=None, help="HTTP endpoint for AI model")
+    parser.add_argument("--gemini-key", default=None, help="Google Gemini API key (or set GEMINI_API_KEY env)")
     parser.add_argument("--poll-interval", type=int, default=3, help="Seconds between polls (default: 3)")
     parser.add_argument("--private-key", default=None, help="Private key (prefer MINER_PRIVATE_KEY env var)")
     parser.add_argument("--deployment-path", default=None, help="Path to deployments JSON")

@@ -7,7 +7,7 @@ from sdk.polkadot.client import PolkadotClient
 
 client = PolkadotClient(
     network="polkadot_testnet",
-    private_key="0x3230cd6d7ea8c1666bcec73a86a1a8d86ad23198bf29554bf11f61bed41452fb",
+    private_key=os.environ.get("TESTNET_PRIVATE_KEY", "0x3230cd6d7ea8c1666bcec73a86a1a8d86ad23198bf29554bf11f61bed41452fb"),
     deployment_path="luxtensor/contracts/deployments-polkadot.json",
 )
 
