@@ -37,8 +37,10 @@ Author: ModernTensor Team
 Version: 1.0.0
 """
 
+import hashlib
 import logging
 import time
+from collections import OrderedDict
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from dataclasses import dataclass, field
 from enum import Enum
@@ -53,8 +55,10 @@ logger = logging.getLogger(__name__)
 # Configuration
 # =============================================================================
 
+
 class ProofRequirement(str, Enum):
     """How strictly to require proofs"""
+
     NONE = "none"  # Don't require proofs
     OPTIONAL = "optional"  # Accept but don't require
     RECOMMENDED = "recommended"  # Penalize missing proofs
@@ -83,6 +87,9 @@ class ZkMLScoringConfig:
     # Cache verified proofs to avoid re-verification
     cache_verified: bool = True
 
+    # Maximum number of cached verification results (LRU eviction)
+    max_cache_size: int = 1000
+
     # Proof backend (ezkl, dev)
     backend: str = "ezkl"
 
@@ -93,6 +100,7 @@ class ZkMLScoringConfig:
 @dataclass
 class VerificationResult:
     """Result of proof verification"""
+
     is_valid: bool
     proof_score: float  # 0.0 - 1.0
     original_score: float
@@ -116,6 +124,7 @@ class VerificationResult:
 # =============================================================================
 # Proof-Aware Response Model
 # =============================================================================
+
 
 @dataclass
 class ProofAttachedResponse:
@@ -148,14 +157,16 @@ class ProofAttachedResponse:
         }
 
     @classmethod
-    def from_synapse_response(cls, response: Dict[str, Any]) -> 'ProofAttachedResponse':
+    def from_synapse_response(cls, response: Dict[str, Any]) -> "ProofAttachedResponse":
         """Create from SynapseResponse payload"""
         payload = response.get("payload", {})
         zkml = payload.get("zkml", {})
 
         proof_data = None
         if zkml.get("proof"):
-            proof_data = bytes.fromhex(zkml["proof"]) if isinstance(zkml["proof"], str) else zkml["proof"]
+            proof_data = (
+                bytes.fromhex(zkml["proof"]) if isinstance(zkml["proof"], str) else zkml["proof"]
+            )
 
         return cls(
             output=payload.get("output"),
@@ -172,6 +183,7 @@ class ProofAttachedResponse:
 # =============================================================================
 # Verifier
 # =============================================================================
+
 
 class ZkMLResponseVerifier:
     """
@@ -208,7 +220,7 @@ class ZkMLResponseVerifier:
         """
         self.config = config
         self._proof_verifier = None
-        self._cache: Dict[str, bool] = {}
+        self._cache: OrderedDict[str, bool] = OrderedDict()
 
         self._init_verifier()
 
@@ -222,6 +234,7 @@ class ZkMLResponseVerifier:
             vk = None
             if self.config.verification_key_path:
                 from pathlib import Path
+
                 vk_path = Path(self.config.verification_key_path)
                 if vk_path.exists():
                     vk = vk_path.read_bytes()
@@ -271,10 +284,13 @@ class ZkMLResponseVerifier:
         if not response.has_proof:
             return self._handle_missing_proof(original_score, time.time() - start_time)
 
-        # Check cache
-        if self.config.cache_verified and response.proof_hash:
-            if response.proof_hash in self._cache:
-                cached_valid = self._cache[response.proof_hash]
+        # Check cache — key on hash of actual proof data, NOT miner-supplied proof_hash
+        if self.config.cache_verified and response.proof_data:
+            cache_key = hashlib.sha256(response.proof_data).hexdigest()
+            if cache_key in self._cache:
+                cached_valid = self._cache[cache_key]
+                # Move to end (LRU)
+                self._cache.move_to_end(cache_key)
                 return self._create_result(
                     is_valid=cached_valid,
                     original_score=original_score,
@@ -286,9 +302,13 @@ class ZkMLResponseVerifier:
         try:
             is_valid = self._verify_proof(response)
 
-            # Cache result
-            if self.config.cache_verified and response.proof_hash:
-                self._cache[response.proof_hash] = is_valid
+            # Cache result — keyed on content hash with LRU eviction
+            if self.config.cache_verified and response.proof_data:
+                cache_key = hashlib.sha256(response.proof_data).hexdigest()
+                self._cache[cache_key] = is_valid
+                # Evict oldest entries if cache exceeds max size
+                while len(self._cache) > self.config.max_cache_size:
+                    self._cache.popitem(last=False)
 
             verification_time = time.time() - start_time
 
@@ -424,6 +444,7 @@ class ZkMLResponseVerifier:
 # Miner-side Proof Generator Helper
 # =============================================================================
 
+
 class MinerProofHelper:
     """
     Helper for miners to generate proofs with their responses.
@@ -488,7 +509,7 @@ class MinerProofHelper:
         self,
         input_data: List[float],
         output_data: List[float],
-    ) -> 'Proof':
+    ) -> "Proof":
         """
         Generate proof for inference.
 

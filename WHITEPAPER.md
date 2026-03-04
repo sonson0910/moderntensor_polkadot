@@ -8,7 +8,7 @@
 
 ## Abstract
 
-ModernTensor is a next-generation decentralized artificial intelligence network built on LuxTensor, a custom Layer-1 blockchain optimized for AI workloads. The network enables a global marketplace where AI compute providers (miners) are incentivized to contribute computational resources, while validators ensure quality and security through advanced consensus mechanisms. This whitepaper presents the technical architecture, economic model, and governance framework that positions ModernTensor as the infrastructure layer for decentralized AI.
+ModernTensor is a next-generation decentralized artificial intelligence network **deployed on Polkadot Hub** via the `pallet-revive` EVM compatibility layer. Originally designed around LuxTensor (a custom Layer-1 blockchain optimized for AI workloads), the protocol now leverages Polkadot's shared security, cross-chain messaging (XCM), and battle-tested EVM infrastructure. The network enables a global marketplace where AI compute providers (miners) are incentivized to contribute computational resources, while validators ensure quality and security through advanced consensus mechanisms. This whitepaper presents the technical architecture, economic model, and governance framework that positions ModernTensor as the infrastructure layer for decentralized AI on Polkadot.
 
 ---
 
@@ -96,14 +96,14 @@ ModernTensor implements a three-layer architecture:
 ├─────────────────────────────────────────────────────────────┤
 │                    BLOCKCHAIN LAYER                          │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  LuxTensor L1 • EVM Compatible • High Throughput    │    │
+│  │  Polkadot Hub (pallet-revive EVM) • High Throughput  │    │
 │  └─────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### 3.1 Key Components
 
-1. **LuxTensor L1**: Custom blockchain optimized for AI workloads
+1. **Polkadot Hub**: EVM-compatible smart contracts via `pallet-revive`
 2. **Subnet System**: Specialized networks for different AI domains
 3. **Validator Network**: Quality assurance and consensus
 4. **Miner Network**: Distributed compute providers
@@ -111,9 +111,35 @@ ModernTensor implements a three-layer architecture:
 
 ---
 
-## 4. LuxTensor Blockchain
+## 4. Blockchain Infrastructure
 
-LuxTensor is a purpose-built Layer-1 blockchain designed specifically for decentralized AI infrastructure.
+### 4.0 Deployment on Polkadot Hub
+
+ModernTensor deploys its complete smart contract stack onto **Polkadot Hub (AssetHub)** using the `pallet-revive` EVM compatibility layer. This gives the protocol:
+
+- **Shared security** from Polkadot's Nominated Proof-of-Stake (NPoS)
+- **Cross-chain interoperability** via XCM (Cross-Consensus Messaging)
+- **EVM compatibility** — deploy Solidity contracts directly on Polkadot
+- **Low fees** and high throughput from Polkadot's parachain architecture
+
+**Deployed Contracts on Polkadot Hub:**
+
+| Contract | Purpose |
+|----------|----------|
+| MDTToken | ERC-20 token (21M supply, 8 allocation categories) |
+| MDTVesting | Cliff + linear vesting schedules |
+| MDTStaking | Time-lock staking with 10-100% bonuses |
+| ZkMLVerifier | On-chain zkML proof verification (STARK/Groth16) |
+| AIOracle | AI request/fulfill oracle with payment |
+| GradientAggregator | Federated learning (FedAvg on-chain) |
+| TrainingEscrow | Reward distribution + stake slashing |
+| SubnetRegistry | Full Yuma Consensus with quadratic voting |
+
+The original LuxTensor L1 design serves as the architectural blueprint, while Polkadot Hub provides the production deployment environment.
+
+### 4.1 LuxTensor Architecture (Design Origin)
+
+LuxTensor is a purpose-built Layer-1 blockchain design optimized specifically for decentralized AI infrastructure.
 
 ### 4.1 Technical Specifications
 
@@ -484,21 +510,22 @@ Where:
 
 ### Phase 1: Foundation (Q1 2026) ✅
 
-- [x] LuxTensor L1 blockchain
-- [x] Core consensus mechanism
+- [x] Core consensus mechanism & blockchain architecture
 - [x] Python SDK release
+- [x] **Polkadot Hub deployment** (pallet-revive EVM)
 
 ### Phase 2-3: Network & Consensus (Q1 2026) ✅
 
-- [x] P2P Networking (libp2p)
 - [x] Validator Logic & Slashing
 - [x] Task Dispatch System
+- [x] **8 smart contracts deployed on Polkadot Hub**
 
 ### Phase 4: Native AI Integration (Q1 2026) ✅
 
-- [x] **Native AI Opcodes (0x10-0x13)**
+- [x] **zkML Proof Verification** (ZkMLVerifier)
 - [x] **PaymentEscrow System** (Pay-per-Compute)
 - [x] AI Oracle Integration
+- [x] **Federated Learning** (GradientAggregator + TrainingEscrow)
 
 ### Phase 5: Testnet Launch (Q2 2026)
 

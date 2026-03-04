@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 @dataclass
 class StakeInfo:
     """Aggregate staking info for an address."""
+
     active_stakes: int
     total_locked: int  # wei
     pending_bonus: int  # wei
@@ -38,6 +39,7 @@ class StakeInfo:
 @dataclass
 class StakeLock:
     """Individual stake lock details."""
+
     amount: int  # wei
     lock_time: int  # unix timestamp
     unlock_time: int  # unix timestamp
@@ -75,23 +77,17 @@ class StakingClient:
     def get_stake_info(self, address: Optional[str] = None) -> StakeInfo:
         """Get aggregate staking info."""
         addr = address or self._client.address
-        result = self._contract.functions.getStakeInfo(
-            Web3.to_checksum_address(addr)
-        ).call()
+        result = self._contract.functions.getStakeInfo(Web3.to_checksum_address(addr)).call()
         return StakeInfo(
             active_stakes=result[0],
             total_locked=result[1],
             pending_bonus=result[2],
         )
 
-    def get_stake_lock(
-        self, index: int, address: Optional[str] = None
-    ) -> StakeLock:
+    def get_stake_lock(self, index: int, address: Optional[str] = None) -> StakeLock:
         """Get details of a specific stake lock."""
         addr = address or self._client.address
-        result = self._contract.functions.getStakeLock(
-            Web3.to_checksum_address(addr), index
-        ).call()
+        result = self._contract.functions.getStakeLock(Web3.to_checksum_address(addr), index).call()
         return StakeLock(
             amount=result[0],
             lock_time=result[1],
@@ -104,9 +100,7 @@ class StakingClient:
     def get_stake_count(self, address: Optional[str] = None) -> int:
         """Get number of stake locks for an address."""
         addr = address or self._client.address
-        return self._contract.functions.getStakeCount(
-            Web3.to_checksum_address(addr)
-        ).call()
+        return self._contract.functions.getStakeCount(Web3.to_checksum_address(addr)).call()
 
     def total_staked(self) -> int:
         """Total MDT staked across all users (wei)."""
@@ -122,10 +116,10 @@ class StakingClient:
         If this is less than pending bonuses, unlock() may revert.
 
         Returns:
-            Available bonus tokens in wei
+            Available bonus tokens in wei (clamped to 0 minimum)
         """
         contract_balance = self._client.token.balance_of(self._contract.address)
-        return contract_balance - self.total_staked()
+        return max(0, contract_balance - self.total_staked())
 
     def bonus_pool_balance_ether(self) -> float:
         """Available bonus pool in ether units."""
@@ -150,9 +144,7 @@ class StakingClient:
             >>> client.staking.lock(amount_ether=100, lock_days=90)  # 25% bonus
         """
         amount_wei = Web3.to_wei(amount_ether, "ether")
-        tx = self._contract.functions.lock(
-            amount_wei, lock_days
-        ).build_transaction({})
+        tx = self._contract.functions.lock(amount_wei, lock_days).build_transaction({})
         return self._client.send_tx(tx)
 
     def unlock(self, index: int) -> str:
@@ -171,9 +163,7 @@ class StakingClient:
     def fund_bonus_pool(self, amount_ether: float) -> str:
         """Fund the staking bonus pool (owner only)."""
         amount_wei = Web3.to_wei(amount_ether, "ether")
-        tx = self._contract.functions.fundBonusPool(
-            amount_wei
-        ).build_transaction({})
+        tx = self._contract.functions.fundBonusPool(amount_wei).build_transaction({})
         return self._client.send_tx(tx)
 
     # ── Convenience ─────────────────────────────────────────
@@ -191,9 +181,7 @@ class StakingClient:
         lock_hash = self.lock(amount_ether, lock_days)
         return approve_hash, lock_hash
 
-    def get_all_stakes(
-        self, address: Optional[str] = None
-    ) -> list[StakeLock]:
+    def get_all_stakes(self, address: Optional[str] = None) -> list[StakeLock]:
         """Get all stake locks for an address."""
         count = self.get_stake_count(address)
         return [self.get_stake_lock(i, address) for i in range(count)]

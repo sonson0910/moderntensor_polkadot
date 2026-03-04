@@ -67,8 +67,12 @@ class LocalLLMAdapter:
         try:
             import httpx
 
-            url = f"{GEMINI_API_BASE}?key={self.gemini_api_key}"
-            resp = httpx.get(url, timeout=5)
+            url = f"{GEMINI_API_BASE}"
+            resp = httpx.get(
+                url,
+                headers={"x-goog-api-key": self.gemini_api_key},
+                timeout=5,
+            )
             if resp.status_code == 200:
                 models = resp.json().get("models", [])
                 names = [m.get("name", "") for m in models[:5]]
@@ -112,10 +116,7 @@ class LocalLLMAdapter:
         """Run inference via Google Gemini REST API."""
         import httpx
 
-        url = (
-            f"{GEMINI_API_BASE}/{self.gemini_model}"
-            f":generateContent?key={self.gemini_api_key}"
-        )
+        url = f"{GEMINI_API_BASE}/{self.gemini_model}" f":generateContent"
 
         payload = {
             "contents": [
@@ -137,7 +138,12 @@ class LocalLLMAdapter:
         )
 
         try:
-            resp = httpx.post(url, json=payload, timeout=self.timeout)
+            resp = httpx.post(
+                url,
+                json=payload,
+                headers={"x-goog-api-key": self.gemini_api_key},
+                timeout=self.timeout,
+            )
             resp.raise_for_status()
             data = resp.json()
 
@@ -153,9 +159,7 @@ class LocalLLMAdapter:
             return self._infer_simulation(prompt)
 
         except Exception as e:
-            logger.warning(
-                "Gemini inference failed: %s, falling back to simulation", e
-            )
+            logger.warning("Gemini inference failed: %s, falling back to simulation", e)
             return self._infer_simulation(prompt)
 
     def _infer_http(self, prompt: str) -> bytes:
@@ -187,24 +191,13 @@ class LocalLLMAdapter:
         prompt_lower = prompt.lower()
 
         # Detect domain from prompt content
-        if any(
-            kw in prompt_lower
-            for kw in ["review", "code", "function", "solidity", "contract"]
-        ):
+        if any(kw in prompt_lower for kw in ["review", "code", "function", "solidity", "contract"]):
             domain = "code-review"
-        elif any(
-            kw in prompt_lower for kw in ["sentiment", "analyze", "nlp", "text"]
-        ):
+        elif any(kw in prompt_lower for kw in ["sentiment", "analyze", "nlp", "text"]):
             domain = "nlp"
-        elif any(
-            kw in prompt_lower
-            for kw in ["risk", "finance", "portfolio", "invest"]
-        ):
+        elif any(kw in prompt_lower for kw in ["risk", "finance", "portfolio", "invest"]):
             domain = "finance"
-        elif any(
-            kw in prompt_lower
-            for kw in ["health", "medical", "patient", "diagnosis"]
-        ):
+        elif any(kw in prompt_lower for kw in ["health", "medical", "patient", "diagnosis"]):
             domain = "health"
         else:
             domain = "generic"

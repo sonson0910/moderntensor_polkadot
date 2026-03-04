@@ -27,6 +27,7 @@ PROOF_TYPE_DEV = 2
 @dataclass
 class VerifiedProof:
     """Result of a verified proof."""
+
     proof_hash: bytes
     image_id: bytes
     verifier: str
@@ -108,38 +109,50 @@ class ZkMLClient:
 
     def trust_image(self, image_id: bytes) -> str:
         """Trust a zkML image ID (owner only)."""
-        tx = self._contract.functions.trustImage(
-            image_id
-        ).build_transaction({})
+        tx = self._contract.functions.trustImage(image_id).build_transaction({})
         return self._client.send_tx(tx)
 
     def batch_trust_images(self, image_ids: list[bytes]) -> str:
         """Trust multiple image IDs at once (owner only)."""
-        tx = self._contract.functions.trustImages(
-            image_ids
-        ).build_transaction({})
+        tx = self._contract.functions.trustImages(image_ids).build_transaction({})
         return self._client.send_tx(tx)
 
     def set_dev_mode(self, enabled: bool) -> str:
         """Toggle dev mode (owner only)."""
-        tx = self._contract.functions.setDevMode(
-            enabled
-        ).build_transaction({})
+        tx = self._contract.functions.setDevMode(enabled).build_transaction({})
         return self._client.send_tx(tx)
 
     # ── Convenience (Dev Mode) ──────────────────────────────
 
-    def create_dev_proof(
-        self, image_id: bytes, journal: bytes
-    ) -> tuple[bytes, bytes]:
+    def create_dev_proof(self, image_id: bytes, journal: bytes) -> tuple[bytes, bytes]:
         """
-        Create a dev mode proof (for testing).
+        Create a dev mode proof (for testing/demo ONLY).
+
+        WARNING: Dev proofs provide NO security guarantees.
+        Do NOT use in production — they can be trivially forged.
 
         Dev proof seal = keccak256(imageId || journal)
 
         Returns:
             Tuple of (seal, proof_hash)
+
+        Raises:
+            RuntimeError: If MODERNTENSOR_ENV is set to 'production'
         """
+        import os
+
+        if os.environ.get("MODERNTENSOR_ENV", "").lower() == "production":
+            raise RuntimeError(
+                "create_dev_proof() is disabled in production mode. "
+                "Use Groth16 proofs for production deployments."
+            )
+        import warnings
+
+        warnings.warn(
+            "create_dev_proof() generates trivially forgeable proofs. "
+            "Use Groth16 proofs (PROOF_TYPE_GROTH16) for production.",
+            stacklevel=2,
+        )
         seal = Web3.keccak(image_id + journal)
         proof_hash = Web3.keccak(image_id + journal + seal)
         return seal, proof_hash

@@ -42,9 +42,14 @@ class RpcError(Exception):
 
     Matches the ModernTensor Rust RpcError implementation.
     """
+
     code: int
     message: str
     data: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self):
+        """Initialize Exception base class so args tuple works correctly."""
+        Exception.__init__(self, self.message)
 
     def __str__(self) -> str:
         if self.data:
@@ -65,7 +70,7 @@ class RpcError(Exception):
         return cls(
             code=error.get("code", RpcErrorCode.INTERNAL_ERROR),
             message=error.get("message", "Unknown error"),
-            data=error.get("data")
+            data=error.get("data"),
         )
 
     @property
@@ -74,6 +79,8 @@ class RpcError(Exception):
         retryable_codes = [
             RpcErrorCode.INTERNAL_ERROR,
             RpcErrorCode.RATE_LIMITED,
+            RpcErrorCode.MEMPOOL_FULL,
+            RpcErrorCode.NONCE_TOO_LOW,
         ]
         return self.code in retryable_codes
 
@@ -88,77 +95,77 @@ class RpcError(Exception):
 
 class BlockNotFoundError(RpcError):
     """Block not found error."""
+
     def __init__(self, block_id: str):
-        super().__init__(
-            code=RpcErrorCode.BLOCK_NOT_FOUND,
-            message=f"Block not found: {block_id}"
-        )
+        super().__init__(code=RpcErrorCode.BLOCK_NOT_FOUND, message=f"Block not found: {block_id}")
 
 
 class TransactionNotFoundError(RpcError):
     """Transaction not found error."""
+
     def __init__(self, tx_hash: str):
         super().__init__(
-            code=RpcErrorCode.TRANSACTION_NOT_FOUND,
-            message=f"Transaction not found: {tx_hash}"
+            code=RpcErrorCode.TRANSACTION_NOT_FOUND, message=f"Transaction not found: {tx_hash}"
         )
 
 
 class InsufficientFundsError(RpcError):
     """Insufficient funds error."""
+
     def __init__(self, have: int, need: int):
         super().__init__(
             code=RpcErrorCode.INSUFFICIENT_FUNDS,
             message=f"Insufficient funds: have {have}, need {need}",
-            data={"have": str(have), "need": str(need)}
+            data={"have": str(have), "need": str(need)},
         )
 
 
 class InvalidSignatureError(RpcError):
     """Invalid signature error."""
+
     def __init__(self):
         super().__init__(
-            code=RpcErrorCode.INVALID_SIGNATURE,
-            message="Invalid transaction signature"
+            code=RpcErrorCode.INVALID_SIGNATURE, message="Invalid transaction signature"
         )
 
 
 class NonceTooLowError(RpcError):
     """Nonce too low error."""
+
     def __init__(self, expected: int, got: int):
         super().__init__(
             code=RpcErrorCode.NONCE_TOO_LOW,
             message=f"Nonce too low: expected {expected}, got {got}",
-            data={"expected": expected, "got": got}
+            data={"expected": expected, "got": got},
         )
 
 
 class GasLimitExceededError(RpcError):
     """Gas limit exceeded error."""
+
     def __init__(self, limit: int, required: int):
         super().__init__(
             code=RpcErrorCode.GAS_LIMIT_EXCEEDED,
             message=f"Gas limit exceeded: limit {limit}, required {required}",
-            data={"limit": limit, "required": required}
+            data={"limit": limit, "required": required},
         )
 
 
 class RateLimitedError(RpcError):
     """Rate limited error."""
+
     def __init__(self, message: str = "Too many requests"):
-        super().__init__(
-            code=RpcErrorCode.RATE_LIMITED,
-            message=message
-        )
+        super().__init__(code=RpcErrorCode.RATE_LIMITED, message=message)
 
 
 class MempoolFullError(RpcError):
     """Mempool full error."""
+
     def __init__(self, current: int, max_size: int):
         super().__init__(
             code=RpcErrorCode.MEMPOOL_FULL,
             message=f"Mempool full: {current}/{max_size} transactions",
-            data={"current": current, "max": max_size}
+            data={"current": current, "max": max_size},
         )
 
 
@@ -182,28 +189,20 @@ def parse_rpc_error(error: Dict[str, Any]) -> RpcError:
     elif code == RpcErrorCode.TRANSACTION_NOT_FOUND:
         return TransactionNotFoundError(message.split(": ")[-1] if ": " in message else "")
     elif code == RpcErrorCode.INSUFFICIENT_FUNDS:
-        return InsufficientFundsError(
-            have=int(data.get("have", 0)),
-            need=int(data.get("need", 0))
-        )
+        return InsufficientFundsError(have=int(data.get("have", 0)), need=int(data.get("need", 0)))
     elif code == RpcErrorCode.INVALID_SIGNATURE:
         return InvalidSignatureError()
     elif code == RpcErrorCode.NONCE_TOO_LOW:
-        return NonceTooLowError(
-            expected=int(data.get("expected", 0)),
-            got=int(data.get("got", 0))
-        )
+        return NonceTooLowError(expected=int(data.get("expected", 0)), got=int(data.get("got", 0)))
     elif code == RpcErrorCode.GAS_LIMIT_EXCEEDED:
         return GasLimitExceededError(
-            limit=int(data.get("limit", 0)),
-            required=int(data.get("required", 0))
+            limit=int(data.get("limit", 0)), required=int(data.get("required", 0))
         )
     elif code == RpcErrorCode.RATE_LIMITED:
         return RateLimitedError(message)
     elif code == RpcErrorCode.MEMPOOL_FULL:
         return MempoolFullError(
-            current=int(data.get("current", 0)),
-            max_size=int(data.get("max", 0))
+            current=int(data.get("current", 0)), max_size=int(data.get("max", 0))
         )
     else:
         return RpcError.from_response(error)

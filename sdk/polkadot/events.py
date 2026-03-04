@@ -10,6 +10,7 @@ Enables miners/validators to listen for on-chain events:
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
@@ -40,7 +41,7 @@ class EventListener:
 
     def get_ai_requests(
         self,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Get AIRequestCreated events."""
@@ -52,7 +53,7 @@ class EventListener:
 
     def get_fulfilled_requests(
         self,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Get AIRequestFulfilled events."""
@@ -62,26 +63,23 @@ class EventListener:
         )
         return [dict(e["args"]) for e in event_filter.get_all_entries()]
 
-
     # ── Staking Events ──────────────────────────────────────
 
     def get_staking_events(
         self,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Get Staked events from MDTStaking."""
         contract = self._client._get_contract("MDTStaking")
-        event_filter = contract.events.Staked.create_filter(
-            fromBlock=from_block, toBlock=to_block
-        )
+        event_filter = contract.events.Staked.create_filter(fromBlock=from_block, toBlock=to_block)
         return [dict(e["args"]) for e in event_filter.get_all_entries()]
 
     # ── SubnetRegistry v2 Events ────────────────────────────
 
     def get_subnet_created(
         self,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Get SubnetCreated events."""
@@ -89,7 +87,7 @@ class EventListener:
 
     def get_node_registered(
         self,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Get NodeRegistered events."""
@@ -97,7 +95,7 @@ class EventListener:
 
     def get_weights_committed(
         self,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Get WeightsCommitted events."""
@@ -105,7 +103,7 @@ class EventListener:
 
     def get_slash_events(
         self,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Get NodeSlashed events."""
@@ -113,7 +111,7 @@ class EventListener:
 
     def get_epoch_events(
         self,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """Get EpochCompleted events."""
@@ -128,6 +126,7 @@ class EventListener:
         callback: Callable[[dict[str, Any]], None],
         poll_interval: float = 2.0,
         from_block: int | str = "latest",
+        stop_event: Optional[threading.Event] = None,
     ) -> None:
         """
         Continuously poll for new events.
@@ -138,30 +137,32 @@ class EventListener:
             callback: Function called for each new event
             poll_interval: Seconds between polls
             from_block: Starting block
+            stop_event: Optional threading.Event to signal graceful shutdown
 
         Note:
             This is a blocking call. Run in a thread for async.
+            Set stop_event to allow graceful shutdown.
 
         Example:
+            >>> stop = threading.Event()
             >>> def on_request(event):
             ...     print(f"New AI request: {event}")
-            >>> client.events.poll_events("AIOracle", "AIRequestCreated", on_request)
+            >>> client.events.poll_events("AIOracle", "AIRequestCreated", on_request, stop_event=stop)
         """
         contract = self._client._get_contract(contract_name)
         event_obj = getattr(contract.events, event_name)
 
-        last_block = (
-            from_block
-            if isinstance(from_block, int)
-            else self._client.block_number
-        )
+        last_block = from_block if isinstance(from_block, int) else self._client.block_number
 
         logger.info(
             "Polling %s.%s from block %d (interval=%.1fs)",
-            contract_name, event_name, last_block, poll_interval,
+            contract_name,
+            event_name,
+            last_block,
+            poll_interval,
         )
 
-        while True:
+        while not (stop_event and stop_event.is_set()):
             try:
                 current_block = self._client.block_number
                 if current_block > last_block:
@@ -196,7 +197,7 @@ class EventListener:
         self,
         contract_name: str,
         event_name: str,
-        from_block: int | str = 0,
+        from_block: int | str = "latest",
         to_block: int | str = "latest",
     ) -> list[dict[str, Any]]:
         """
@@ -207,9 +208,7 @@ class EventListener:
         """
         contract = self._client._get_contract(contract_name)
         event_obj = getattr(contract.events, event_name)
-        event_filter = event_obj.create_filter(
-            fromBlock=from_block, toBlock=to_block
-        )
+        event_filter = event_obj.create_filter(fromBlock=from_block, toBlock=to_block)
         return [dict(e["args"]) for e in event_filter.get_all_entries()]
 
     def __repr__(self) -> str:

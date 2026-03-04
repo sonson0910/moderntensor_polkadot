@@ -31,40 +31,43 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     // Types
     // ═══════════════════════════════════════════════════════
 
-    enum NodeType { MINER, VALIDATOR }
+    enum NodeType {
+        MINER,
+        VALIDATOR
+    }
 
     struct Subnet {
         string name;
         address owner;
-        uint256 maxNodes;           // Max neurons in this subnet
-        uint256 emissionShare;      // Share of global emission (basis points, max 10000)
-        uint256 tempo;              // Blocks per epoch
-        uint256 lastEpochBlock;     // Last epoch block
-        uint256 minStake;           // Minimum stake to register (wei)
-        uint256 immunityPeriod;     // Blocks before node can be deregistered
-        uint256 nodeCount;          // Current neuron count
+        uint256 maxNodes; // Max neurons in this subnet
+        uint256 emissionShare; // Share of global emission (basis points, max 10000)
+        uint256 tempo; // Blocks per epoch
+        uint256 lastEpochBlock; // Last epoch block
+        uint256 minStake; // Minimum stake to register (wei)
+        uint256 immunityPeriod; // Blocks before node can be deregistered
+        uint256 nodeCount; // Current neuron count
         bool active;
         uint256 createdAt;
     }
 
     struct Node {
-        address hotkey;             // Network identity key
-        address coldkey;            // Wallet key (owner)
+        address hotkey; // Network identity key
+        address coldkey; // Wallet key (owner)
         NodeType nodeType;
-        uint256 stake;              // Direct stake
-        uint256 delegatedStake;     // Stake delegated to this node
-        uint256 lastUpdate;         // Block of last activity
-        uint16 uid;                 // Unique ID within subnet
+        uint256 stake; // Direct stake
+        uint256 delegatedStake; // Stake delegated to this node
+        uint256 lastUpdate; // Block of last activity
+        uint16 uid; // Unique ID within subnet
         bool active;
-        uint256 incentive;          // Accumulated incentive (scaled 1e18)
-        uint256 trust;              // Trust score (0-1e18) — computed by runEpoch
-        uint256 rank;               // Rank from consensus (0-1e18)
-        uint256 emission;           // Pending emission to claim
+        uint256 incentive; // Accumulated incentive (scaled 1e18)
+        uint256 trust; // Trust score (0-1e18) — computed by runEpoch
+        uint256 rank; // Rank from consensus (0-1e18)
+        uint256 emission; // Pending emission to claim
     }
 
     struct WeightEntry {
         uint16 uid;
-        uint16 weight;              // 0-65535 (normalized to sum)
+        uint16 weight; // 0-65535 (normalized to sum)
     }
 
     // [NEW] Commit-reveal structure
@@ -80,10 +83,10 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
 
     IERC20 public immutable token;
 
-    uint256 public nextNetuid = 1;  // 0 is reserved for root
-    uint256 public subnetRegistrationCost;  // MDT burn to create subnet
-    uint256 public emissionPerBlock;        // Global MDT emission per block
-    uint256 public totalEmissionShares;     // Sum of all subnet emission shares
+    uint256 public nextNetuid = 1; // 0 is reserved for root
+    uint256 public subnetRegistrationCost; // MDT burn to create subnet
+    uint256 public emissionPerBlock; // Global MDT emission per block
+    uint256 public totalEmissionShares; // Sum of all subnet emission shares
 
     // netuid => Subnet
     mapping(uint256 => Subnet) public subnets;
@@ -111,18 +114,19 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     mapping(uint256 => mapping(uint16 => WeightCommit)) public weightCommits;
 
     // Self-vote protection: netuid => coldkey => NodeType => registered
-    mapping(uint256 => mapping(address => mapping(NodeType => bool))) public coldkeyNodeType;
+    mapping(uint256 => mapping(address => mapping(NodeType => bool)))
+        public coldkeyNodeType;
 
     // ZkML Verifier reference
     address public zkmlVerifier;
 
     // Slashing parameters
-    uint256 public slashPercentage = 500;   // 5% in basis points (max 10000)
-    uint256 public maxWeightAge = 7200;     // ~24h — auto-slash if weights older
+    uint256 public slashPercentage = 500; // 5% in basis points (max 10000)
+    uint256 public maxWeightAge = 7200; // ~24h — auto-slash if weights older
 
     // Commit-reveal timing
     uint256 public commitRevealWindow = 600; // Must reveal within 600 blocks (~2h)
-    uint256 public commitMinDelay = 10;      // Must wait 10 blocks after commit
+    uint256 public commitMinDelay = 10; // Must wait 10 blocks after commit
 
     // Trust multiplier: high-trust validators get up to 1.5x weight
     uint256 public constant TRUST_MULTIPLIER_MAX = 15000; // 1.5x in basis points (10000 = 1x)
@@ -132,18 +136,68 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     // Events
     // ═══════════════════════════════════════════════════════
 
-    event SubnetCreated(uint256 indexed netuid, string name, address indexed owner);
+    event SubnetCreated(
+        uint256 indexed netuid,
+        string name,
+        address indexed owner
+    );
     event SubnetUpdated(uint256 indexed netuid, string name);
-    event NodeRegistered(uint256 indexed netuid, uint16 uid, address indexed hotkey, address indexed coldkey, NodeType nodeType);
-    event NodeDeregistered(uint256 indexed netuid, uint16 uid, address indexed hotkey);
-    event WeightsCommitted(uint256 indexed netuid, uint16 indexed validatorUid, bytes32 commitHash);
-    event WeightsRevealed(uint256 indexed netuid, uint16 indexed validatorUid, uint256 weightCount);
-    event WeightsSet(uint256 indexed netuid, uint16 indexed validatorUid, uint256 weightCount);
-    event EpochCompleted(uint256 indexed netuid, uint256 blockNumber, uint256 totalEmission);
-    event EmissionClaimed(uint256 indexed netuid, uint16 uid, address indexed hotkey, uint256 amount);
-    event StakeDelegated(address indexed delegator, uint256 indexed netuid, uint16 validatorUid, uint256 amount);
-    event StakeUndelegated(address indexed delegator, uint256 indexed netuid, uint16 validatorUid, uint256 amount);
-    event NodeSlashed(uint256 indexed netuid, uint16 uid, uint256 amount, string reason);
+    event NodeRegistered(
+        uint256 indexed netuid,
+        uint16 uid,
+        address indexed hotkey,
+        address indexed coldkey,
+        NodeType nodeType
+    );
+    event NodeDeregistered(
+        uint256 indexed netuid,
+        uint16 uid,
+        address indexed hotkey
+    );
+    event WeightsCommitted(
+        uint256 indexed netuid,
+        uint16 indexed validatorUid,
+        bytes32 commitHash
+    );
+    event WeightsRevealed(
+        uint256 indexed netuid,
+        uint16 indexed validatorUid,
+        uint256 weightCount
+    );
+    event WeightsSet(
+        uint256 indexed netuid,
+        uint16 indexed validatorUid,
+        uint256 weightCount
+    );
+    event EpochCompleted(
+        uint256 indexed netuid,
+        uint256 blockNumber,
+        uint256 totalEmission
+    );
+    event EmissionClaimed(
+        uint256 indexed netuid,
+        uint16 uid,
+        address indexed hotkey,
+        uint256 amount
+    );
+    event StakeDelegated(
+        address indexed delegator,
+        uint256 indexed netuid,
+        uint16 validatorUid,
+        uint256 amount
+    );
+    event StakeUndelegated(
+        address indexed delegator,
+        uint256 indexed netuid,
+        uint16 validatorUid,
+        uint256 amount
+    );
+    event NodeSlashed(
+        uint256 indexed netuid,
+        uint16 uid,
+        uint256 amount,
+        string reason
+    );
     event TrustUpdated(uint256 indexed netuid, uint16 uid, uint256 newTrust);
 
     // ═══════════════════════════════════════════════════════
@@ -199,13 +253,20 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         uint256 minStake,
         uint256 tempo
     ) external nonReentrant returns (uint256 netuid) {
-        require(bytes(name).length > 0 && bytes(name).length <= 64, "Invalid name");
+        require(
+            bytes(name).length > 0 && bytes(name).length <= 64,
+            "Invalid name"
+        );
         require(maxNodes > 0 && maxNodes <= 4096, "Invalid maxNodes");
         require(tempo > 0, "Invalid tempo");
 
         // Burn registration cost
         if (subnetRegistrationCost > 0) {
-            token.safeTransferFrom(msg.sender, address(this), subnetRegistrationCost);
+            token.safeTransferFrom(
+                msg.sender,
+                address(this),
+                subnetRegistrationCost
+            );
         }
 
         netuid = nextNetuid++;
@@ -240,7 +301,10 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     ) external {
         Subnet storage sn = subnets[netuid];
         require(sn.active, "Subnet not active");
-        require(msg.sender == sn.owner || msg.sender == owner(), "Not authorized");
+        require(
+            msg.sender == sn.owner || msg.sender == owner(),
+            "Not authorized"
+        );
 
         sn.maxNodes = maxNodes;
         sn.minStake = minStake;
@@ -277,7 +341,9 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
 
         // [SECURITY] Self-vote protection:
         // Same coldkey cannot be both MINER and VALIDATOR in the same subnet
-        NodeType oppositeType = nodeType == NodeType.MINER ? NodeType.VALIDATOR : NodeType.MINER;
+        NodeType oppositeType = nodeType == NodeType.MINER
+            ? NodeType.VALIDATOR
+            : NodeType.MINER;
         require(
             !coldkeyNodeType[netuid][msg.sender][oppositeType],
             "Self-vote: coldkey already registered as opposite type"
@@ -318,7 +384,10 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     function deregisterNode(uint256 netuid, uint16 uid) external nonReentrant {
         Node storage node = nodes[netuid][uid];
         require(node.active, "Not active");
-        require(node.coldkey == msg.sender || msg.sender == owner(), "Not authorized");
+        require(
+            node.coldkey == msg.sender || msg.sender == owner(),
+            "Not authorized"
+        );
         require(
             block.number >= node.lastUpdate + subnets[netuid].immunityPeriod,
             "Immunity period"
@@ -329,6 +398,9 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
 
         // Clear self-vote tracking
         coldkeyNodeType[netuid][node.coldkey][node.nodeType] = false;
+
+        // Decrement node count
+        subnets[netuid].nodeCount--;
 
         // Return stake
         uint256 totalStake = node.stake + node.emission;
@@ -350,13 +422,13 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
      * @param netuid Target subnet
      * @param commitHash The hash of (uids, weights, salt)
      */
-    function commitWeights(
-        uint256 netuid,
-        bytes32 commitHash
-    ) external {
+    function commitWeights(uint256 netuid, bytes32 commitHash) external {
         require(isRegistered[netuid][msg.sender], "Not registered");
         uint16 validatorUid = hotkeyToUid[netuid][msg.sender];
-        require(nodes[netuid][validatorUid].nodeType == NodeType.VALIDATOR, "Not a validator");
+        require(
+            nodes[netuid][validatorUid].nodeType == NodeType.VALIDATOR,
+            "Not a validator"
+        );
         require(nodes[netuid][validatorUid].active, "Not active");
 
         weightCommits[netuid][validatorUid] = WeightCommit({
@@ -420,10 +492,9 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         // Store weights (replace existing)
         delete _weights[netuid][validatorUid];
         for (uint256 i = 0; i < uids.length; i++) {
-            _weights[netuid][validatorUid].push(WeightEntry({
-                uid: uids[i],
-                weight: weights[i]
-            }));
+            _weights[netuid][validatorUid].push(
+                WeightEntry({uid: uids[i], weight: weights[i]})
+            );
         }
 
         validator.lastUpdate = block.number;
@@ -432,20 +503,25 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Legacy setWeights (without commit-reveal, for backward compat).
-     * @dev Still works but marked — for subnets that don't require commit-reveal.
+     * @notice Legacy setWeights (without commit-reveal).
+     * @dev DEPRECATED: Use commitWeights()+revealWeights() instead.
+     *      Restricted to contract owner only for emergency/migration use.
+     *      Normal validators MUST use commit-reveal flow.
      */
     function setWeights(
         uint256 netuid,
         uint16[] calldata uids,
         uint16[] calldata weights
-    ) external {
+    ) external onlyOwner {
         require(uids.length == weights.length, "Length mismatch");
         require(uids.length > 0, "Empty weights");
 
         require(isRegistered[netuid][msg.sender], "Not registered");
         uint16 validatorUid = hotkeyToUid[netuid][msg.sender];
-        require(nodes[netuid][validatorUid].nodeType == NodeType.VALIDATOR, "Not a validator");
+        require(
+            nodes[netuid][validatorUid].nodeType == NodeType.VALIDATOR,
+            "Not a validator"
+        );
         require(nodes[netuid][validatorUid].active, "Not active");
 
         for (uint256 i = 0; i < uids.length; i++) {
@@ -455,10 +531,9 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
 
         delete _weights[netuid][validatorUid];
         for (uint256 i = 0; i < uids.length; i++) {
-            _weights[netuid][validatorUid].push(WeightEntry({
-                uid: uids[i],
-                weight: weights[i]
-            }));
+            _weights[netuid][validatorUid].push(
+                WeightEntry({uid: uids[i], weight: weights[i]})
+            );
         }
 
         nodes[netuid][validatorUid].lastUpdate = block.number;
@@ -507,7 +582,9 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         require(totalEmissionShares > 0, "No emission shares");
 
         uint256 blocksPassed = block.number - sn.lastEpochBlock;
-        uint256 totalEmission = (emissionPerBlock * blocksPassed * sn.emissionShare) / totalEmissionShares;
+        uint256 totalEmission = (emissionPerBlock *
+            blocksPassed *
+            sn.emissionShare) / totalEmissionShares;
 
         if (totalEmission == 0) {
             sn.lastEpochBlock = block.number;
@@ -526,7 +603,8 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
 
         for (uint16 v = 0; v < sn.nodeCount; v++) {
             Node storage validator = nodes[netuid][v];
-            if (!validator.active || validator.nodeType != NodeType.VALIDATOR) continue;
+            if (!validator.active || validator.nodeType != NodeType.VALIDATOR)
+                continue;
 
             uint256 totalStake = validator.stake + validator.delegatedStake;
             if (totalStake == 0) continue;
@@ -537,10 +615,13 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             // [TRUST MULTIPLIER] High-trust validators get up to 1.5x weight
             // trust is stored as 0 - 1e18, scale to multiplier
             uint256 trustMultiplier = TRUST_MULTIPLIER_BASE +
-                (validator.trust * (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) / 1e18;
+                (validator.trust *
+                    (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) /
+                1e18;
 
             // Apply trust multiplier to voting power
-            uint256 effectivePower = (votingPower * trustMultiplier) / TRUST_MULTIPLIER_BASE;
+            uint256 effectivePower = (votingPower * trustMultiplier) /
+                TRUST_MULTIPLIER_BASE;
 
             WeightEntry[] storage w = _weights[netuid][v];
             uint256 weightSum = 0;
@@ -552,7 +633,8 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             // Add trust-weighted quadratic contribution
             uint256 validatorTotalContrib = 0;
             for (uint256 i = 0; i < w.length; i++) {
-                uint256 contribution = (effectivePower * uint256(w[i].weight)) / weightSum;
+                uint256 contribution = (effectivePower * uint256(w[i].weight)) /
+                    weightSum;
                 scores[w[i].uid] += contribution;
                 totalScore += contribution;
                 validatorTotalContrib += contribution;
@@ -567,7 +649,8 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         if (totalScore > 0) {
             for (uint16 uid = 0; uid < sn.nodeCount; uid++) {
                 if (scores[uid] > 0 && nodes[netuid][uid].active) {
-                    uint256 nodeEmission = (minerShare * scores[uid]) / totalScore;
+                    uint256 nodeEmission = (minerShare * scores[uid]) /
+                        totalScore;
                     nodes[netuid][uid].emission += nodeEmission;
                     nodes[netuid][uid].rank = (scores[uid] * 1e18) / totalScore;
                     nodes[netuid][uid].incentive += nodeEmission;
@@ -584,8 +667,13 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
 
         // First pass: compute total validator stake
         for (uint16 v = 0; v < sn.nodeCount; v++) {
-            if (nodes[netuid][v].active && nodes[netuid][v].nodeType == NodeType.VALIDATOR) {
-                totalValidatorStake += nodes[netuid][v].stake + nodes[netuid][v].delegatedStake;
+            if (
+                nodes[netuid][v].active &&
+                nodes[netuid][v].nodeType == NodeType.VALIDATOR
+            ) {
+                totalValidatorStake +=
+                    nodes[netuid][v].stake +
+                    nodes[netuid][v].delegatedStake;
             }
         }
 
@@ -593,9 +681,12 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         if (totalValidatorStake > 0) {
             for (uint16 v = 0; v < sn.nodeCount; v++) {
                 Node storage validator = nodes[netuid][v];
-                if (validator.active && validator.nodeType == NodeType.VALIDATOR) {
+                if (
+                    validator.active && validator.nodeType == NodeType.VALIDATOR
+                ) {
                     uint256 vStake = validator.stake + validator.delegatedStake;
-                    uint256 perValidator = (validatorShareTotal * vStake) / totalValidatorStake;
+                    uint256 perValidator = (validatorShareTotal * vStake) /
+                        totalValidatorStake;
                     validator.emission += perValidator;
                 }
             }
@@ -608,7 +699,10 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         if (totalScore > 0) {
             for (uint16 v = 0; v < sn.nodeCount; v++) {
                 Node storage validator = nodes[netuid][v];
-                if (!validator.active || validator.nodeType != NodeType.VALIDATOR) continue;
+                if (
+                    !validator.active ||
+                    validator.nodeType != NodeType.VALIDATOR
+                ) continue;
 
                 WeightEntry[] storage w = _weights[netuid][v];
                 if (w.length == 0) {
@@ -630,9 +724,11 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
 
                 for (uint256 i = 0; i < w.length; i++) {
                     // Validator's normalized weight for this miner
-                    uint256 valWeight = (uint256(w[i].weight) * 1e18) / weightSum;
+                    uint256 valWeight = (uint256(w[i].weight) * 1e18) /
+                        weightSum;
                     // Consensus normalized score for this miner
-                    uint256 consensusWeight = (scores[w[i].uid] * 1e18) / totalScore;
+                    uint256 consensusWeight = (scores[w[i].uid] * 1e18) /
+                        totalScore;
 
                     // Alignment = min(valWeight, consensusWeight)
                     // (measures overlap between validator's view and consensus)
@@ -649,7 +745,9 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
                 uint256 newAlignment = maxAlignment > 0
                     ? (alignmentScore * 1e18) / maxAlignment
                     : 0;
-                validator.trust = (validator.trust * 70 + newAlignment * 30) / 100;
+                validator.trust =
+                    (validator.trust * 70 + newAlignment * 30) /
+                    100;
 
                 emit TrustUpdated(netuid, v, validator.trust);
             }
@@ -698,7 +796,10 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             msg.sender == owner() || msg.sender == subnets[netuid].owner,
             "Not authorized to slash"
         );
-        require(basisPoints > 0 && basisPoints <= 10000, "Invalid slash percentage");
+        require(
+            basisPoints > 0 && basisPoints <= 10000,
+            "Invalid slash percentage"
+        );
 
         Node storage node = nodes[netuid][uid];
         require(node.active, "Node not active");
@@ -740,7 +841,12 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         // Decrease trust for inactivity
         validator.trust = (validator.trust * 80) / 100; // -20% trust
 
-        emit NodeSlashed(netuid, validatorUid, slashAmount, "Inactive validator");
+        emit NodeSlashed(
+            netuid,
+            validatorUid,
+            slashAmount,
+            "Inactive validator"
+        );
     }
 
     // ═══════════════════════════════════════════════════════
@@ -778,7 +884,10 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         uint256 amount
     ) external nonReentrant {
         bytes32 key = keccak256(abi.encodePacked(netuid, validatorUid));
-        require(delegations[msg.sender][key] >= amount, "Insufficient delegation");
+        require(
+            delegations[msg.sender][key] >= amount,
+            "Insufficient delegation"
+        );
 
         delegations[msg.sender][key] -= amount;
         nodes[netuid][validatorUid].delegatedStake -= amount;
@@ -807,16 +916,22 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     /**
      * @notice Get full metagraph for a subnet
      */
-    function getMetagraph(uint256 netuid) external view returns (
-        address[] memory hotkeys,
-        address[] memory coldkeys,
-        uint256[] memory stakes,
-        uint256[] memory ranks,
-        uint256[] memory incentives,
-        uint256[] memory emissions,
-        uint8[] memory nodeTypes,
-        bool[] memory activeFlags
-    ) {
+    function getMetagraph(
+        uint256 netuid
+    )
+        external
+        view
+        returns (
+            address[] memory hotkeys,
+            address[] memory coldkeys,
+            uint256[] memory stakes,
+            uint256[] memory ranks,
+            uint256[] memory incentives,
+            uint256[] memory emissions,
+            uint8[] memory nodeTypes,
+            bool[] memory activeFlags
+        )
+    {
         uint256 count = subnets[netuid].nodeCount;
         hotkeys = new address[](count);
         coldkeys = new address[](count);
@@ -846,23 +961,33 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     function getNode(
         uint256 netuid,
         uint16 uid
-    ) external view returns (
-        address hotkey,
-        address coldkey,
-        uint8 nodeType,
-        uint256 stake,
-        uint256 delegatedStake,
-        uint256 rank,
-        uint256 incentive,
-        uint256 emission,
-        uint256 trust,
-        bool active
-    ) {
+    )
+        external
+        view
+        returns (
+            address hotkey,
+            address coldkey,
+            uint8 nodeType,
+            uint256 stake,
+            uint256 delegatedStake,
+            uint256 rank,
+            uint256 incentive,
+            uint256 emission,
+            uint256 trust,
+            bool active
+        )
+    {
         Node storage n = nodes[netuid][uid];
         return (
-            n.hotkey, n.coldkey, uint8(n.nodeType),
-            n.stake, n.delegatedStake,
-            n.rank, n.incentive, n.emission, n.trust,
+            n.hotkey,
+            n.coldkey,
+            uint8(n.nodeType),
+            n.stake,
+            n.delegatedStake,
+            n.rank,
+            n.incentive,
+            n.emission,
+            n.trust,
             n.active
         );
     }
@@ -870,17 +995,31 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     /**
      * @notice Get subnet info
      */
-    function getSubnet(uint256 netuid) external view returns (
-        string memory name,
-        address subnetOwner,
-        uint256 maxNodes,
-        uint256 emissionShare,
-        uint256 tempo,
-        uint256 nodeCount,
-        bool active
-    ) {
+    function getSubnet(
+        uint256 netuid
+    )
+        external
+        view
+        returns (
+            string memory name,
+            address subnetOwner,
+            uint256 maxNodes,
+            uint256 emissionShare,
+            uint256 tempo,
+            uint256 nodeCount,
+            bool active
+        )
+    {
         Subnet storage sn = subnets[netuid];
-        return (sn.name, sn.owner, sn.maxNodes, sn.emissionShare, sn.tempo, sn.nodeCount, sn.active);
+        return (
+            sn.name,
+            sn.owner,
+            sn.maxNodes,
+            sn.emissionShare,
+            sn.tempo,
+            sn.nodeCount,
+            sn.active
+        );
     }
 
     /**
@@ -893,7 +1032,10 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     /**
      * @notice Lookup UID by hotkey
      */
-    function getUidByHotkey(uint256 netuid, address hotkey) external view returns (uint16) {
+    function getUidByHotkey(
+        uint256 netuid,
+        address hotkey
+    ) external view returns (uint16) {
         require(isRegistered[netuid][hotkey], "Not registered");
         return hotkeyToUid[netuid][hotkey];
     }
@@ -901,7 +1043,10 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     /**
      * @notice Get trust score of a node
      */
-    function getTrust(uint256 netuid, uint16 uid) external view returns (uint256) {
+    function getTrust(
+        uint256 netuid,
+        uint16 uid
+    ) external view returns (uint256) {
         return nodes[netuid][uid].trust;
     }
 

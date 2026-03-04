@@ -22,12 +22,13 @@ if TYPE_CHECKING:
 @dataclass
 class VestingScheduleInfo:
     """Individual vesting schedule details."""
-    total_amount: int       # wei
-    claimed_amount: int     # wei
-    start_time: int         # unix timestamp
-    cliff_duration: int     # seconds
-    vesting_duration: int   # seconds
-    tge_percent: int        # 0-100
+
+    total_amount: int  # wei
+    claimed_amount: int  # wei
+    start_time: int  # unix timestamp
+    cliff_duration: int  # seconds
+    vesting_duration: int  # seconds
+    tge_percent: int  # 0-100
     revocable: bool
     revoked: bool
 
@@ -56,9 +57,7 @@ class TokenClient:
     def balance_of(self, address: Optional[str] = None) -> int:
         """Get MDT token balance (wei)."""
         addr = address or self._client.address
-        return self._token.functions.balanceOf(
-            Web3.to_checksum_address(addr)
-        ).call()
+        return self._token.functions.balanceOf(Web3.to_checksum_address(addr)).call()
 
     def balance_of_ether(self, address: Optional[str] = None) -> float:
         """Get MDT token balance in ether units."""
@@ -110,6 +109,9 @@ class TokenClient:
         """
         Approve spender to use tokens.
 
+        Uses safe approve pattern: resets to zero first if there's an existing
+        non-zero allowance to prevent the ERC-20 front-running attack.
+
         Args:
             spender: Contract/address to approve
             amount: Amount in wei
@@ -117,8 +119,14 @@ class TokenClient:
         Returns:
             Transaction hash
         """
+        spender_cs = Web3.to_checksum_address(spender)
+        # Safe approve: reset to 0 first if current allowance is non-zero
+        current_allowance = self.allowance(self._client.address, spender_cs)
+        if current_allowance > 0 and amount > 0:
+            reset_tx = self._token.functions.approve(spender_cs, 0).build_transaction({})
+            self._client.send_tx(reset_tx)
         tx = self._token.functions.approve(
-            Web3.to_checksum_address(spender),
+            spender_cs,
             amount,
         ).build_transaction({})
         return self._client.send_tx(tx)
@@ -152,9 +160,7 @@ class TokenClient:
             Transaction hash
         """
         recipient = Web3.to_checksum_address(to or self._client.address)
-        tx = self._token.functions.executeTGE(
-            category, recipient
-        ).build_transaction({})
+        tx = self._token.functions.executeTGE(category, recipient).build_transaction({})
         return self._client.send_tx(tx)
 
     def mint_category(self, category: int, to: str, amount: int) -> str:
@@ -194,9 +200,7 @@ class TokenClient:
             Transaction hash
         """
         self._require_vesting()
-        tx = self._vesting.functions.setTGETimestamp(
-            timestamp
-        ).build_transaction({})
+        tx = self._vesting.functions.setTGETimestamp(timestamp).build_transaction({})
         return self._client.send_tx(tx)
 
     def create_team_vesting(self, beneficiary: str, amount: int) -> str:
@@ -276,9 +280,7 @@ class TokenClient:
         """
         self._require_vesting()
         addr = address or self._client.address
-        return self._vesting.functions.claimable(
-            Web3.to_checksum_address(addr)
-        ).call()
+        return self._vesting.functions.claimable(Web3.to_checksum_address(addr)).call()
 
     def claimable_ether(self, address: Optional[str] = None) -> float:
         """Get claimable amount in ether units."""
@@ -296,9 +298,7 @@ class TokenClient:
             Vested amount in wei
         """
         self._require_vesting()
-        return self._vesting.functions.vestedAmount(
-            Web3.to_checksum_address(address), index
-        ).call()
+        return self._vesting.functions.vestedAmount(Web3.to_checksum_address(address), index).call()
 
     def get_vesting_info(self, address: Optional[str] = None) -> list[VestingScheduleInfo]:
         """
@@ -312,21 +312,21 @@ class TokenClient:
         """
         self._require_vesting()
         addr = address or self._client.address
-        result = self._vesting.functions.getVestingInfo(
-            Web3.to_checksum_address(addr)
-        ).call()
+        result = self._vesting.functions.getVestingInfo(Web3.to_checksum_address(addr)).call()
         schedules = []
         for s in result:
-            schedules.append(VestingScheduleInfo(
-                total_amount=s[0],
-                claimed_amount=s[1],
-                start_time=s[2],
-                cliff_duration=s[3],
-                vesting_duration=s[4],
-                tge_percent=s[5],
-                revocable=s[6],
-                revoked=s[7],
-            ))
+            schedules.append(
+                VestingScheduleInfo(
+                    total_amount=s[0],
+                    claimed_amount=s[1],
+                    start_time=s[2],
+                    cliff_duration=s[3],
+                    vesting_duration=s[4],
+                    tge_percent=s[5],
+                    revocable=s[6],
+                    revoked=s[7],
+                )
+            )
         return schedules
 
     def __repr__(self) -> str:

@@ -7,8 +7,10 @@ Demonstrates full SDK interaction with deployed contracts:
 2. Check MDT token balance
 3. Stake tokens with time-lock bonus
 4. Create AI inference request
-5. Create federated learning job
-6. Verify zkML proof (dev mode)
+5. Subnet registry metagraph
+6. Federated learning (GradientAggregator)
+7. Training escrow (stake-gated)
+8. Verify zkML proof (dev mode)
 
 Requirements:
     pip install web3 eth-account
@@ -108,9 +110,9 @@ def demo_oracle(client: PolkadotClient) -> None:
 
 
 def demo_zkml(client: PolkadotClient) -> None:
-    """Step 6: zkML Verification."""
+    """Step 8: zkML Verification."""
     print("\n" + "=" * 60)
-    print("🔐 STEP 6: zkML Verification")
+    print("🔐 STEP 8: zkML Verification")
     print("=" * 60)
 
     zkml = client.zkml
@@ -125,10 +127,67 @@ def demo_zkml(client: PolkadotClient) -> None:
     print(f"  Seal:       {seal.hex()[:20]}...")
     print(f"  Trusted:    {zkml.is_image_trusted(image_id)}")
 
-def demo_subnet(client: PolkadotClient) -> None:
-    """Step 8: Subnet operations."""
+
+def demo_training(client: PolkadotClient) -> None:
+    """Step 6: Federated learning (GradientAggregator)."""
     print("\n" + "=" * 60)
-    print("🌐 STEP 8: Subnet Registry")
+    print("🧠 STEP 6: Federated Learning (GradientAggregator)")
+    print("=" * 60)
+
+    training = client.training
+    total_jobs = training.next_job_id()
+    print(f"  Total jobs: {total_jobs}")
+
+    if total_jobs > 0:
+        job = training.get_job_details(0)
+        print(f"\n  📋 Job 0:")
+        print(f"    Model:       {job.model_hash.hex()[:20]}...")
+        print(f"    Rounds:      {job.current_round}/{job.total_rounds}")
+        print(f"    Reward:      {job.reward_pool_ether:.4f} MDT")
+        print(f"    Max parts:   {job.max_participants}")
+        print(f"    Status:      {job.status.name}")
+        print(f"    Progress:    {job.progress_pct:.0f}%")
+
+        my_rounds = training.get_participant_rounds(0, client.address)
+        print(f"    My rounds:   {my_rounds}")
+    else:
+        print("  No jobs yet. Use training.create_job() to start one.")
+
+    model_hash = Web3.keccak(text="moderntensor-resnet50-v1")
+    print(f"\n  🔑 Model hash: {model_hash.hex()[:20]}...")
+    print("  Create: client.training.approve_and_create_job(hash, 5, 100.0)")
+
+
+def demo_escrow(client: PolkadotClient) -> None:
+    """Step 7: Training Escrow."""
+    print("\n" + "=" * 60)
+    print("🔐 STEP 7: Training Escrow (Stake-Gated)")
+    print("=" * 60)
+
+    escrow = client.escrow
+    total_tasks = escrow.next_task_id()
+    slash = escrow.slash_rate_pct()
+    total_slashed = Web3.from_wei(escrow.total_slashed(), "ether")
+    print(f"  Total tasks:    {total_tasks}")
+    print(f"  Slash rate:     {slash:.0f}%")
+    print(f"  Total slashed:  {total_slashed:.4f} MDT")
+
+    if total_tasks > 0:
+        task = escrow.get_task_details(0)
+        print(f"\n  📋 Task 0:")
+        print(f"    Creator:     {task.creator[:20]}...")
+        print(f"    Reward:      {task.reward_ether:.4f} MDT")
+        print(f"    Min stake:   {task.min_stake_ether:.4f} MDT")
+        print(f"    Trainers:    {task.trainer_count}/{task.max_trainers}")
+        print(f"    Status:      {task.status.name}")
+    else:
+        print("  No tasks yet. Use escrow.create_task() to start one.")
+
+
+def demo_subnet(client: PolkadotClient) -> None:
+    """Step 5: Subnet operations."""
+    print("\n" + "=" * 60)
+    print("🌐 STEP 5: Subnet Registry")
     print("=" * 60)
 
     subnet = client.subnet
@@ -166,17 +225,10 @@ def demo_subnet(client: PolkadotClient) -> None:
 def main():
     parser = argparse.ArgumentParser(description="ModernTensor Polkadot Demo")
     parser.add_argument(
-        "--network", default="local",
-        help="Network: local, polkadot_testnet, paseo_testnet"
+        "--network", default="local", help="Network: local, polkadot_testnet, paseo_testnet"
     )
-    parser.add_argument(
-        "--key", default=None,
-        help="Private key (or set PRIVATE_KEY env var)"
-    )
-    parser.add_argument(
-        "--deployment", default=None,
-        help="Path to deployments-polkadot.json"
-    )
+    parser.add_argument("--key", default=None, help="Private key (or set PRIVATE_KEY env var)")
+    parser.add_argument("--deployment", default=None, help="Path to deployments-polkadot.json")
     args = parser.parse_args()
 
     private_key = args.key or os.environ.get("PRIVATE_KEY")
@@ -198,12 +250,14 @@ def main():
         demo_token(client)
         demo_staking(client)
         demo_oracle(client)
-        demo_zkml(client)
         demo_subnet(client)
+        demo_training(client)
+        demo_escrow(client)
+        demo_zkml(client)
 
         print("\n" + "=" * 60)
-        print("✅ Demo complete! All 6 modules operational.")
-        print("=")
+        print("✅ Demo complete! All 8 modules operational.")
+        print("=" * 60)
 
     except Exception as e:
         print(f"\n❌ Error: {e}")
@@ -213,4 +267,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -51,7 +51,7 @@ class SubnetHyperparameters(BaseModel):
                 "max_neurons": 256,
                 "weights_rate_limit": 100,
                 "adjustment_interval": 100,
-                "activity_cutoff": 5000
+                "activity_cutoff": 5000,
             }
         }
 
@@ -100,8 +100,7 @@ class SubnetInfo(BaseModel):
 
     # Hyperparameters
     hyperparameters: Optional[SubnetHyperparameters] = Field(
-        default=None,
-        description="Subnet hyperparameters"
+        default=None, description="Subnet hyperparameters"
     )
 
     # Block Information
@@ -111,9 +110,9 @@ class SubnetInfo(BaseModel):
         super().__init__(**data)
         # Ensure subnet_uid and netuid are synced with id
         if self.subnet_uid == 0:
-            object.__setattr__(self, 'subnet_uid', self.id)
+            object.__setattr__(self, "subnet_uid", self.id)
         if self.netuid == 0:
-            object.__setattr__(self, 'netuid', self.id)
+            object.__setattr__(self, "netuid", self.id)
 
     @classmethod
     def from_rust_data(cls, data: dict) -> "SubnetInfo":
@@ -123,34 +122,41 @@ class SubnetInfo(BaseModel):
         """
         subnet_id = data.get("id", 0)
 
+        # Helper: use first non-None value (allows 0 as valid)
+        def _first_non_none(*values, default=None):
+            for v in values:
+                if v is not None:
+                    return v
+            return default
+
         # Handle both snake_case and camelCase for emission
-        emission_rate = (
-            data.get("emission_rate")
-            or data.get("emissionShare")
-            or data.get("emission_share")
-            or 0
+        emission_rate = _first_non_none(
+            data.get("emission_rate"),
+            data.get("emissionShare"),
+            data.get("emission_share"),
+            default=0,
         )
 
         # Handle both snake_case and camelCase for created_at
-        created_at = (
-            data.get("created_at")
-            or data.get("registeredAt")
-            or data.get("registered_at")
-            or 0
+        created_at = _first_non_none(
+            data.get("created_at"),
+            data.get("registeredAt"),
+            data.get("registered_at"),
+            default=0,
         )
 
         # Handle both snake_case and camelCase for total_stake
-        total_stake = (
-            data.get("total_stake")
-            or data.get("totalStake")
-            or 0
+        total_stake = _first_non_none(
+            data.get("total_stake"),
+            data.get("totalStake"),
+            default=0,
         )
 
         # Handle both snake_case and camelCase for participant_count
-        participant_count = (
-            data.get("participant_count")
-            or data.get("participantCount")
-            or 0
+        participant_count = _first_non_none(
+            data.get("participant_count"),
+            data.get("participantCount"),
+            default=0,
         )
 
         return cls(
@@ -163,9 +169,9 @@ class SubnetInfo(BaseModel):
             participant_count=participant_count,
             total_stake=total_stake,
             n=data.get("n"),
-            max_neurons=data.get("max_neurons") or data.get("maxNeurons"),
+            max_neurons=_first_non_none(data.get("max_neurons"), data.get("maxNeurons")),
             emission_rate=emission_rate,
-            min_stake=data.get("min_stake") or data.get("minStake"),
+            min_stake=_first_non_none(data.get("min_stake"), data.get("minStake")),
             tempo=data.get("tempo"),
             created_at=created_at,
         )
@@ -183,12 +189,14 @@ class SubnetInfo(BaseModel):
                 "total_stake": 5000000000,
                 "emission_rate": 1000000,
                 "created_at": 123456,
-                "block": 200000
+                "block": 200000,
             }
         }
 
     def __str__(self) -> str:
-        return f"SubnetInfo(id={self.id}, name='{self.name}', participants={self.participant_count})"
+        return (
+            f"SubnetInfo(id={self.id}, name='{self.name}', participants={self.participant_count})"
+        )
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -198,21 +206,27 @@ class SubnetInfo(BaseModel):
 # Subnet 0 (Root Subnet) Types
 # =============================================================================
 
+
 class RootConfig(BaseModel):
     """
     Configuration for Root Subnet (Subnet 0).
     """
+
     max_subnets: int = Field(default=32, description="Maximum number of subnets", ge=1)
-    max_root_validators: int = Field(default=64, description="Top N stakers become root validators", ge=1)
+    max_root_validators: int = Field(
+        default=64, description="Top N stakers become root validators", ge=1
+    )
     min_stake_for_root: int = Field(
         default=1_000_000_000_000_000_000_000,  # 1000 MDT in LTS
-        description="Minimum stake to be root validator (LTS)"
+        description="Minimum stake to be root validator (LTS)",
     )
     subnet_registration_cost: int = Field(
         default=100_000_000_000_000_000_000,  # 100 tokens
-        description="Cost to register subnet (burned)"
+        description="Cost to register subnet (burned)",
     )
-    weight_update_interval: int = Field(default=100, description="Blocks between weight updates", ge=1)
+    weight_update_interval: int = Field(
+        default=100, description="Blocks between weight updates", ge=1
+    )
     emission_tempo: int = Field(default=360, description="Blocks per emission cycle", ge=1)
 
     class Config:
@@ -223,7 +237,7 @@ class RootConfig(BaseModel):
                 "min_stake_for_root": 1000000000000000000000,
                 "subnet_registration_cost": 100000000000000000000,
                 "weight_update_interval": 100,
-                "emission_tempo": 360
+                "emission_tempo": 360,
             }
         }
 
@@ -232,6 +246,7 @@ class RootValidatorInfo(BaseModel):
     """
     Information about a Root Validator (top staker in Subnet 0).
     """
+
     address: str = Field(..., description="Validator address (0x...)")
     stake: int = Field(default=0, description="Total stake amount (LTS)", ge=0)
     rank: int = Field(default=0, description="Rank among root validators (1-64)", ge=0)
@@ -245,7 +260,7 @@ class RootValidatorInfo(BaseModel):
                 "stake": 10000000000000000000000,
                 "rank": 1,
                 "is_active": True,
-                "last_weight_update": 12345
+                "last_weight_update": 12345,
             }
         }
 
@@ -254,6 +269,7 @@ class SubnetWeights(BaseModel):
     """
     Weight votes from a root validator for subnets.
     """
+
     validator: str = Field(..., description="Validator address")
     weights: dict = Field(default_factory=dict, description="netuid -> weight (0.0-1.0)")
     block_updated: int = Field(default=0, description="Block when last updated", ge=0)
@@ -273,7 +289,7 @@ class SubnetWeights(BaseModel):
             "example": {
                 "validator": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                 "weights": {"1": 0.4, "2": 0.35, "3": 0.25},
-                "block_updated": 12345
+                "block_updated": 12345,
             }
         }
 
@@ -282,22 +298,20 @@ class EmissionShare(BaseModel):
     """
     Computed emission share for a subnet after weight aggregation.
     """
+
     netuid: int = Field(..., description="Subnet ID", ge=0)
     share: float = Field(default=0.0, description="Emission share (0.0-1.0)", ge=0, le=1)
     amount: int = Field(default=0, description="Actual token amount for epoch (wei)", ge=0)
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "netuid": 1,
-                "share": 0.35,
-                "amount": 350000000000000000000
-            }
+            "example": {"netuid": 1, "share": 0.35, "amount": 350000000000000000000}
         }
 
 
 class SubnetRegistrationResult(BaseModel):
     """Result of subnet registration."""
+
     success: bool = Field(..., description="Whether registration succeeded")
     netuid: Optional[int] = Field(default=None, description="Assigned subnet ID")
     tx_hash: Optional[str] = Field(default=None, description="Transaction hash")
@@ -311,6 +325,6 @@ class SubnetRegistrationResult(BaseModel):
                 "netuid": 5,
                 "tx_hash": "0x1234...",
                 "error": None,
-                "cost_burned": 100000000000000000000
+                "cost_burned": 100000000000000000000,
             }
         }

@@ -25,8 +25,9 @@ ModernTensor deploys its complete AI protocol stack onto **Polkadot Hub (AssetHu
 | `MDTStaking` | Time-lock staking with 10-100% bonuses | 221 |
 | `ZkMLVerifier` | On-chain zkML proof verification (STARK/Groth16) | 404 |
 | `AIOracle` | AI request → fulfill oracle with payment | 335 |
-| `GradientAggregator` | Federated learning (FedAvg on-chain) | 402 |
-| `TrainingEscrow` | Reward distribution + stake slashing | 243 |
+| `GradientAggregator` | Federated learning (FedAvg on-chain) | ~380 |
+| `TrainingEscrow` | Reward distribution + stake slashing | ~350 |
+| `SubnetRegistry` | Yuma Consensus, metagraph, quadratic voting | 968 |
 | `PaymentEscrow` | Pay-per-compute AI requests | ~200 |
 
 Plus **13 more contracts** including AI examples (`AnomalyGuard`, `ContentAuthenticator`, `SemanticMatchmaker`, `TrustGraph`), templates (`LuxNFT`, `LuxToken`), interfaces, and libraries.
@@ -49,8 +50,11 @@ Plus **13 more contracts** including AI examples (`AnomalyGuard`, `ContentAuthen
 │     ├──→ GradientAggregator (FedAvg)            │
 │     │    (Training jobs + rounds)               │
 │     │                                           │
-│     └──→ TrainingEscrow (Rewards + Slashing)    │
-│          PaymentEscrow (Pay-per-compute)        │
+│     ├──→ TrainingEscrow (Rewards + Slashing)    │
+│     │    PaymentEscrow (Pay-per-compute)        │
+│     │                                           │
+│     └──→ SubnetRegistry (Yuma Consensus)        │
+│          (Metagraph + Quadratic Voting)         │
 │                                                 │
 └─────────────────────────────────────────────────┘
 ```

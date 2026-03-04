@@ -28,7 +28,7 @@
 
 ## 2. Solution: ModernTensor
 
-**A custom Layer 1 blockchain optimized for decentralized AI workloads**
+**A decentralized AI protocol deployed on Polkadot Hub via pallet-revive EVM**
 
 ![System Architecture](images/system_architecture.png)
 
@@ -36,10 +36,10 @@
 
 | Feature | Benefit |
 |---------|---------|
-| **Custom L1 Blockchain** | AI-optimized, no external dependencies |
-| **Native AI Primitives** | 7 precompiles (0x22-0x28) for in-EVM AI |
+| **Polkadot Hub EVM** | Shared security, cross-chain (XCM), low fees |
+| **On-chain AI Verification** | zkML proofs (STARK/Groth16) for quality assurance |
 | **Adaptive Emission** | 72-99% less inflation than competitors |
-| **HNSW Semantic Layer** | O(log N) vector search in StateDB |
+| **Federated Learning** | On-chain FedAvg with gradient aggregation |
 | **Anti-Cheat System** | Fair, trustworthy network |
 
 ---
@@ -77,10 +77,10 @@
 
 | Layer | Technology | Status |
 |-------|------------|--------|
-| **Blockchain** | Rust, Custom L1 | ✅ Complete |
-| **Consensus** | PoS + AI Validation | ✅ Complete |
-| **AI Primitives** | 0x22-0x28 Precompiles | ✅ Complete |
-| **Semantic Layer** | HNSW O(log N) Search | ✅ Complete |
+| **Blockchain** | Polkadot Hub (pallet-revive EVM) | ✅ Deployed |
+| **Consensus** | PoS + AI Validation (SubnetRegistry) | ✅ Complete |
+| **zkML Verification** | STARK/Groth16 proof verification | ✅ Complete |
+| **Federated Learning** | GradientAggregator + TrainingEscrow | ✅ Complete |
 | **SDK** | Python + Solidity | ✅ Complete |
 | **Security** | Feb 2026 Hardening | ✅ Complete |
 
@@ -88,12 +88,12 @@
 
 | Metric | Value |
 |--------|-------|
-| Block Time | 12 seconds |
-| TPS | 1,000–5,000 |
-| Finality | ~24 seconds |
+| Platform | Polkadot Hub (Westend AssetHub) |
+| EVM Compatibility | pallet-revive |
+| Smart Contracts | 9 core + 8 templates |
 | Code Lines | 60,000+ |
-| AI Precompiles | 7 (0x22-0x28) |
-| Status | **~95% Complete** |
+| Chain ID | 420420421 |
+| Status | **Deployed on Testnet** |
 
 ---
 
@@ -132,13 +132,13 @@
 | Feature | ModernTensor | Bittensor |
 |---------|--------------|-----------|
 | Daily Emission | 0-2,876 adaptive | 7,200 fixed |
-| **Native AI** | 7 precompiles (0x22-0x28) | ❌ None |
-| **Vector Search** | HNSW O(log N) | ❌ None |
+| **Platform** | Polkadot Hub (EVM) | Custom Substrate L1 |
+| **zkML Verification** | On-chain (STARK/Groth16) | ❌ None |
 | Burn Mechanisms | 4 types | None |
 | Entry Barrier | 0 MDT | 1000+ TAO |
-| TPS | 1,000–5,000 | ~100 |
+| Cross-chain | XCM native | ❌ None |
 
-**Result: 72-99% less inflation with superior technology**
+**Result: 72-99% less inflation with Polkadot's shared security**
 
 ---
 
@@ -165,15 +165,15 @@
 
 ## 8. Traction & Milestones
 
-### Completed ✅ (~95% Complete)
+### Completed ✅ (Deployed on Polkadot Hub)
 
-- [x] Custom L1 Blockchain (Rust) - 63,000+ lines across Rust blockchain + Python SDK
-- [x] PoS Consensus Engine + Proof of Intelligence
-- [x] **Native AI Primitives (0x22-0x28)**
-- [x] **HNSW Semantic Layer** - O(log N) vector search
-- [x] **World Semantic Index** - Cross-contract AI
+- [x] Smart contract stack deployed on Polkadot Hub (pallet-revive EVM)
+- [x] PoS Consensus Engine + Proof of Intelligence (SubnetRegistry)
+- [x] **zkML Proof Verification** (ZkMLVerifier contract)
+- [x] **Federated Learning** (GradientAggregator + TrainingEscrow)
+- [x] **AI Oracle** — Decentralized AI request/fulfill
 - [x] Security Hardening (Feb 2026)
-- [x] Python + Solidity SDK
+- [x] Python + Solidity SDK — 60,000+ lines
 
 ### In Progress 🔄
 
@@ -228,8 +228,8 @@
 
 ### Investment Thesis
 
-✅ **Working Product** - 60K+ lines, ~95% complete
-✅ **Native AI** - First L1 with AI precompiles
+✅ **Working Product** - Deployed on Polkadot Hub testnet
+✅ **On-chain AI** - zkML verification + federated learning
 ✅ **Superior Economics** - 72-99% less inflation
 ✅ **Defensible Tech** - HNSW + AI SDK moat
 ✅ **Clear Roadmap** - Mainnet Q2 2026

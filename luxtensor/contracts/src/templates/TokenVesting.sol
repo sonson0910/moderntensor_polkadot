@@ -234,16 +234,29 @@ contract TokenVesting {
     }
 
     /**
-     * @dev Emergency withdraw all funds (only owner)
+     * @dev Emergency withdraw only uncommitted funds (owner only).
+     *      Protects beneficiaries' vested but unclaimed tokens.
      */
     function emergencyWithdraw() external onlyOwner {
         uint256 balance = address(this).balance;
         require(balance > 0, "No funds to withdraw");
 
-        (bool success, ) = payable(owner).call{value: balance}("");
+        // Calculate total unvested + unclaimed amount owed to beneficiaries
+        uint256 totalOwed = 0;
+        for (uint256 i = 0; i < vestingIdCounter; i++) {
+            VestingSchedule storage sched = vestingSchedules[i];
+            if (sched.initialized && !sched.revoked) {
+                totalOwed += sched.totalAmount - sched.releasedAmount;
+            }
+        }
+
+        require(balance > totalOwed, "No uncommitted funds");
+        uint256 withdrawable = balance - totalOwed;
+
+        (bool success, ) = payable(owner).call{value: withdrawable}("");
         require(success, "Transfer failed");
 
-        emit EmergencyWithdraw(owner, balance);
+        emit EmergencyWithdraw(owner, withdrawable);
     }
 
     /**

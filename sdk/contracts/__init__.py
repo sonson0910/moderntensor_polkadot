@@ -20,6 +20,8 @@ CONTRACT_NAMES = [
     "ZkMLVerifier",
     "AIOracle",
     "SubnetRegistry",
+    "GradientAggregator",
+    "TrainingEscrow",
 ]
 
 
@@ -39,8 +41,7 @@ def get_abi(contract_name: str) -> list[dict[str, Any]]:
     """
     if contract_name not in CONTRACT_NAMES:
         raise ValueError(
-            f"Unknown contract '{contract_name}'. "
-            f"Valid: {', '.join(CONTRACT_NAMES)}"
+            f"Unknown contract '{contract_name}'. " f"Valid: {', '.join(CONTRACT_NAMES)}"
         )
 
     if contract_name not in _ABI_CACHE:

@@ -12,11 +12,13 @@ Provides unified access to all on-chain contract functionality:
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from typing import Any, Optional
 
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
+from web3.exceptions import TransactionNotFound, TimeExhausted
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 
@@ -28,9 +30,14 @@ from .oracle import OracleClient
 from .zkml import ZkMLClient
 from .events import EventListener
 from .subnet import SubnetClient
+from .training import TrainingClient
+from .escrow import EscrowClient
 from .orchestrator import AISubnetOrchestrator
 
 logger = logging.getLogger(__name__)
+
+# Safety cap to prevent runaway gas costs
+MAX_GAS_LIMIT = 5_000_000
 
 
 class PolkadotClient:
@@ -111,6 +118,11 @@ class PolkadotClient:
         self._zkml: Optional[ZkMLClient] = None
         self._events: Optional[EventListener] = None
         self._subnet: Optional[SubnetClient] = None
+        self._training: Optional[TrainingClient] = None
+        self._escrow: Optional[EscrowClient] = None
+
+        # Nonce management lock to prevent race conditions
+        self._nonce_lock = threading.Lock()
 
     # ── Properties ──────────────────────────────────────────
 
@@ -159,8 +171,6 @@ class PolkadotClient:
             self._oracle = OracleClient(self)
         return self._oracle
 
-
-
     @property
     def zkml(self) -> ZkMLClient:
         """ZkMLVerifier client."""
@@ -182,6 +192,20 @@ class PolkadotClient:
             self._subnet = SubnetClient(self)
         return self._subnet
 
+    @property
+    def training(self) -> TrainingClient:
+        """GradientAggregator client — federated learning (FedAvg)."""
+        if self._training is None:
+            self._training = TrainingClient(self)
+        return self._training
+
+    @property
+    def escrow(self) -> EscrowClient:
+        """TrainingEscrow client — stake-gated training with slashing."""
+        if self._escrow is None:
+            self._escrow = EscrowClient(self)
+        return self._escrow
+
     def orchestrator(self, netuid: int = 1) -> AISubnetOrchestrator:
         """Create an AI Subnet Orchestrator for the given subnet.
 
@@ -197,8 +221,7 @@ class PolkadotClient:
         address = self._addresses.get(name)
         if not address:
             raise ValueError(
-                f"No address for contract '{name}'. "
-                f"Available: {list(self._addresses.keys())}"
+                f"No address for contract '{name}'. " f"Available: {list(self._addresses.keys())}"
             )
         abi = get_abi(name)
         return self.w3.eth.contract(
@@ -232,16 +255,20 @@ class PolkadotClient:
 
         for attempt in range(retries):
             try:
-                # Build transaction (re-fetch nonce each attempt)
-                tx_copy = dict(tx)
-                tx_copy.setdefault("from", self._account.address)
-                tx_copy.setdefault("chainId", self.chain_id)
-                tx_copy["nonce"] = self.w3.eth.get_transaction_count(
-                    self._account.address, "pending"
-                )
+                with self._nonce_lock:
+                    # Build transaction (re-fetch nonce each attempt)
+                    tx_copy = dict(tx)
+                    tx_copy.setdefault("from", self._account.address)
+                    tx_copy.setdefault("chainId", self.chain_id)
+                    tx_copy["nonce"] = self.w3.eth.get_transaction_count(
+                        self._account.address, "pending"
+                    )
 
-                if "gas" not in tx_copy:
-                    tx_copy["gas"] = self.w3.eth.estimate_gas(tx_copy)
+                    if "gas" not in tx_copy:
+                        estimated_gas = self.w3.eth.estimate_gas(tx_copy)
+                        tx_copy["gas"] = min(estimated_gas, MAX_GAS_LIMIT)
+                    else:
+                        tx_copy["gas"] = min(tx_copy["gas"], MAX_GAS_LIMIT)
 
                 # Use EIP-1559 fields for compatibility with modern nodes
                 if "maxFeePerGas" not in tx_copy and "gasPrice" not in tx_copy:
@@ -276,13 +303,16 @@ class PolkadotClient:
 
             except RuntimeError:
                 raise  # Don't retry on-chain reverts
-            except Exception as e:
+            except (ConnectionError, TimeoutError, TransactionNotFound, TimeExhausted) as e:
                 last_err = e
                 if attempt < retries - 1:
-                    wait = 2 ** attempt
+                    wait = 2**attempt
                     logger.warning(
                         "TX attempt %d/%d failed, retrying in %ds: %s",
-                        attempt + 1, retries, wait, e,
+                        attempt + 1,
+                        retries,
+                        wait,
+                        e,
                     )
                     time.sleep(wait)
 

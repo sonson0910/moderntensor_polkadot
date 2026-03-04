@@ -16,7 +16,7 @@ from .polkadot import PolkadotClient
 # - sdk.ai_ml.models   → ML model registry
 
 # Utilities (BPS conversion, score distribution)
-from .utils import (
+from .utils.bps_utils import (
     float_to_bps,
     bps_to_float,
     bps_to_percent,

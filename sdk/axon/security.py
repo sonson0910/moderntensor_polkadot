@@ -54,6 +54,9 @@ class SecurityManager:
         # Failed authentication attempts
         self.failed_auth_attempts: Dict[str, int] = defaultdict(int)
 
+        # Persistent HMAC secret for API key hashing (survives object recreation)
+        self._hmac_secret: str = secrets.token_hex(32)
+
         # Lock for thread-safe operations
         self.lock = asyncio.Lock()
 
@@ -99,10 +102,7 @@ class SecurityManager:
         logger.info(f"Removed {ip_address} from whitelist")
 
     async def check_rate_limit(
-        self,
-        ip_address: str,
-        max_requests: int = 100,
-        window_seconds: int = 60
+        self, ip_address: str, max_requests: int = 100, window_seconds: int = 60
     ) -> Tuple[bool, int]:
         """
         Check if an IP has exceeded rate limits.
@@ -121,8 +121,7 @@ class SecurityManager:
 
             # Clean up old requests
             self.rate_limit_tracker[ip_address] = [
-                ts for ts in self.rate_limit_tracker[ip_address]
-                if ts > cutoff
+                ts for ts in self.rate_limit_tracker[ip_address] if ts > cutoff
             ]
 
             # Check if limit exceeded
@@ -153,9 +152,7 @@ class SecurityManager:
     def decrement_active_connections(self, ip_address: str):
         """Decrement active connection count for an IP."""
         if ip_address in self.active_connections:
-            self.active_connections[ip_address] = max(
-                0, self.active_connections[ip_address] - 1
-            )
+            self.active_connections[ip_address] = max(0, self.active_connections[ip_address] - 1)
 
     def check_connection_limit(self, ip_address: str, max_connections: int = 10) -> bool:
         """
@@ -176,7 +173,7 @@ class SecurityManager:
 
     def _hash_api_key(self, api_key: str) -> str:
         """
-        Hash an API key using HMAC-SHA256 with a server-side secret.
+        Hash an API key using HMAC-SHA256 with a persistent server-side secret.
 
         Security: Keys are never stored in plain text.
         Uses HMAC keyed hash to prevent rainbow table attacks.
@@ -187,12 +184,9 @@ class SecurityManager:
         Returns:
             HMAC-SHA256 hash of the key
         """
-        # Use the lock-derived secret as HMAC key for salted hashing
-        server_secret = hashlib.sha256(str(id(self)).encode()).hexdigest()
+        # Use the persistent cryptographic secret as HMAC key
         return hmac.new(
-            server_secret.encode('utf-8'),
-            api_key.encode('utf-8'),
-            hashlib.sha256
+            self._hmac_secret.encode("utf-8"), api_key.encode("utf-8"), hashlib.sha256
         ).hexdigest()
 
     def register_api_key(self, uid: str, expiry_days: Optional[int] = None) -> str:
@@ -326,9 +320,7 @@ class SecurityManager:
         # Auto-blacklist after threshold
         if attempts >= 5:
             self.add_to_blacklist(ip_address)
-            logger.warning(
-                f"Auto-blacklisted {ip_address} after {attempts} failed auth attempts"
-            )
+            logger.warning(f"Auto-blacklisted {ip_address} after {attempts} failed auth attempts")
 
         return attempts
 
@@ -350,8 +342,7 @@ class SecurityManager:
             # Clean rate limit tracker
             for ip in list(self.rate_limit_tracker.keys()):
                 self.rate_limit_tracker[ip] = [
-                    ts for ts in self.rate_limit_tracker[ip]
-                    if ts > cutoff
+                    ts for ts in self.rate_limit_tracker[ip] if ts > cutoff
                 ]
                 if not self.rate_limit_tracker[ip]:
                     del self.rate_limit_tracker[ip]
@@ -363,6 +354,7 @@ class SecurityManager:
 # Advanced Security Features (Phase 2 Enhancements)
 # =============================================================================
 
+
 class CircuitBreaker:
     """
     Circuit breaker pattern implementation for service protection.
@@ -372,10 +364,7 @@ class CircuitBreaker:
     """
 
     def __init__(
-        self,
-        failure_threshold: int = 5,
-        timeout_seconds: int = 60,
-        half_open_timeout: int = 30
+        self, failure_threshold: int = 5, timeout_seconds: int = 60, half_open_timeout: int = 30
     ):
         """
         Initialize circuit breaker.
@@ -420,7 +409,11 @@ class CircuitBreaker:
 
             try:
                 # Execute function
-                result = await func(*args, **kwargs) if asyncio.iscoroutinefunction(func) else func(*args, **kwargs)
+                result = (
+                    await func(*args, **kwargs)
+                    if asyncio.iscoroutinefunction(func)
+                    else func(*args, **kwargs)
+                )
 
                 # Success - reset or close circuit
                 if self.state == "half_open":
@@ -447,9 +440,7 @@ class CircuitBreaker:
 
         if self.failure_count >= self.failure_threshold:
             self.state = "open"
-            logger.warning(
-                f"Circuit breaker opened after {self.failure_count} failures"
-            )
+            logger.warning(f"Circuit breaker opened after {self.failure_count} failures")
 
     def _close_circuit(self):
         """Close the circuit after successful recovery."""
@@ -482,7 +473,7 @@ class DDoSProtection:
         requests_per_second: int = 10,
         burst_size: int = 20,
         max_concurrent: int = 100,
-        window_seconds: int = 60
+        window_seconds: int = 60,
     ):
         """
         Initialize DDoS protection.
@@ -625,40 +616,39 @@ class JWTAuthenticator:
         # Try PyJWT first (standards-compliant)
         try:
             import jwt
+
             payload = {
                 "uid": uid,
                 "iat": now.timestamp(),
                 "exp": expiry.timestamp(),
                 "iss": "moderntensor-axon",
-                "metadata": metadata or {}
+                "metadata": metadata or {},
             }
             return jwt.encode(payload, self.secret_key, algorithm="HS256")
         except ImportError:
             pass
 
         # Fallback: manual HMAC-based JWT (header.payload.signature)
-        header = base64.urlsafe_b64encode(json.dumps(
-            {"alg": "HS256", "typ": "JWT"}
-        ).encode()).decode().rstrip('=')
+        header = (
+            base64.urlsafe_b64encode(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
+            .decode()
+            .rstrip("=")
+        )
 
         payload = {
             "uid": uid,
             "iat": now.timestamp(),
             "exp": expiry.timestamp(),
             "iss": "moderntensor-axon",
-            "metadata": metadata or {}
+            "metadata": metadata or {},
         }
-        payload_b64 = base64.urlsafe_b64encode(
-            json.dumps(payload).encode()
-        ).decode().rstrip('=')
+        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
 
         signing_input = f"{header}.{payload_b64}"
         signature = hmac.new(
-            self.secret_key.encode(),
-            signing_input.encode(),
-            hashlib.sha256
+            self.secret_key.encode(), signing_input.encode(), hashlib.sha256
         ).digest()
-        sig_b64 = base64.urlsafe_b64encode(signature).decode().rstrip('=')
+        sig_b64 = base64.urlsafe_b64encode(signature).decode().rstrip("=")
 
         return f"{header}.{payload_b64}.{sig_b64}"
 
@@ -683,8 +673,13 @@ class JWTAuthenticator:
             # Try PyJWT first
             try:
                 import jwt
-                payload = jwt.decode(token, self.secret_key, algorithms=["HS256"],
-                                     options={"require": ["exp", "uid", "iss"]})
+
+                payload = jwt.decode(
+                    token,
+                    self.secret_key,
+                    algorithms=["HS256"],
+                    options={"require": ["exp", "uid", "iss"]},
+                )
                 return True, payload
             except ImportError:
                 pass
@@ -699,11 +694,9 @@ class JWTAuthenticator:
             # Verify signature
             signing_input = f"{header_b64}.{payload_b64}"
             expected_sig = hmac.new(
-                self.secret_key.encode(),
-                signing_input.encode(),
-                hashlib.sha256
+                self.secret_key.encode(), signing_input.encode(), hashlib.sha256
             ).digest()
-            expected_sig_b64 = base64.urlsafe_b64encode(expected_sig).decode().rstrip('=')
+            expected_sig_b64 = base64.urlsafe_b64encode(expected_sig).decode().rstrip("=")
 
             if not hmac.compare_digest(sig_b64, expected_sig_b64):
                 return False, None
@@ -711,7 +704,7 @@ class JWTAuthenticator:
             # Decode payload (add padding back)
             padding = 4 - len(payload_b64) % 4
             if padding != 4:
-                payload_b64 += '=' * padding
+                payload_b64 += "=" * padding
             payload_json = base64.urlsafe_b64decode(payload_b64).decode()
             payload = json.loads(payload_json)
 
@@ -730,13 +723,14 @@ class JWTAuthenticator:
         """Revoke a token. Stores expiry time to allow automatic cleanup."""
         import json
         import base64
+
         try:
             parts = token.split(".")
             if len(parts) >= 2:
                 payload_b64 = parts[1] if len(parts) == 3 else parts[0]
                 padding = 4 - len(payload_b64) % 4
                 if padding != 4:
-                    payload_b64 += '=' * padding
+                    payload_b64 += "=" * padding
                 payload = json.loads(base64.urlsafe_b64decode(payload_b64))
                 exp = payload.get("exp", datetime.now().timestamp() + 3600)
                 self.revoked_tokens[token] = exp
@@ -799,10 +793,9 @@ class RateLimiter:
         self.endpoint_limits: Dict[str, int] = {}
 
         # Token buckets for burst handling
-        self.token_buckets: Dict[str, Dict] = defaultdict(lambda: {
-            "tokens": default_limit,
-            "last_update": datetime.now()
-        })
+        self.token_buckets: Dict[str, Dict] = defaultdict(
+            lambda: {"tokens": default_limit, "last_update": datetime.now()}
+        )
 
         self.lock = asyncio.Lock()
 
@@ -811,9 +804,7 @@ class RateLimiter:
         self.endpoint_limits[endpoint] = limit
 
     async def check_limit(
-        self,
-        ip_address: str,
-        endpoint: Optional[str] = None
+        self, ip_address: str, endpoint: Optional[str] = None
     ) -> Tuple[bool, Dict]:
         """
         Check if request is within rate limit.
@@ -834,9 +825,7 @@ class RateLimiter:
 
             # Sliding window check
             cutoff = now - timedelta(seconds=self.window_seconds)
-            self.ip_requests[key] = [
-                ts for ts in self.ip_requests[key] if ts > cutoff
-            ]
+            self.ip_requests[key] = [ts for ts in self.ip_requests[key] if ts > cutoff]
 
             current_count = len(self.ip_requests[key])
 
@@ -845,7 +834,7 @@ class RateLimiter:
                     "allowed": False,
                     "limit": limit,
                     "current": current_count,
-                    "reset_in": self.window_seconds
+                    "reset_in": self.window_seconds,
                 }
 
             # Record request
@@ -855,7 +844,7 @@ class RateLimiter:
                 "allowed": True,
                 "limit": limit,
                 "current": current_count + 1,
-                "remaining": limit - current_count - 1
+                "remaining": limit - current_count - 1,
             }
 
     def get_stats(self, ip_address: str) -> Dict:
@@ -863,12 +852,10 @@ class RateLimiter:
         now = datetime.now()
         cutoff = now - timedelta(seconds=self.window_seconds)
 
-        requests = [
-            ts for ts in self.ip_requests[ip_address] if ts > cutoff
-        ]
+        requests = [ts for ts in self.ip_requests[ip_address] if ts > cutoff]
 
         return {
             "requests_in_window": len(requests),
             "limit": self.default_limit,
-            "remaining": max(0, self.default_limit - len(requests))
+            "remaining": max(0, self.default_limit - len(requests)),
         }

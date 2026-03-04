@@ -15,9 +15,9 @@
  *   3. MDTStaking     - Time-lock staking with bonus rates
  *   4. ZkMLVerifier   - On-chain zkML proof verification
  *   5. AIOracle       - AI request/fulfill oracle with zkML
- *   6. GradientAggregator - Federated learning training jobs
- *   7. TrainingEscrow - Reward distribution + slashing
- *   8. PaymentEscrow  - Pay-per-compute AI requests
+ *   6. SubnetRegistry  - Metagraph, consensus, weights, emission
+ *   7. GradientAggregator - Federated learning training jobs
+ *   8. TrainingEscrow - Reward distribution + slashing
  *
  * After deployment:
  *   - All contracts are linked together
@@ -203,6 +203,26 @@ async function main() {
     }
 
     // ─────────────────────────────────────────
+    // Phase 3.5c: Federated Learning & Escrow
+    // ─────────────────────────────────────────
+    banner("Phase 3.5c: Federated Learning Infrastructure");
+
+    step("8e", "Deploying GradientAggregator (FedAvg on-chain)...");
+    const GradientAggregator = await hre.ethers.getContractFactory("GradientAggregator");
+    const gradAgg = await GradientAggregator.deploy(deployed.MDTToken);
+    await gradAgg.waitForDeployment();
+    deployed.GradientAggregator = await gradAgg.getAddress();
+    success(`GradientAggregator: ${deployed.GradientAggregator}`);
+
+    step("8f", "Deploying TrainingEscrow (stake + slash + rewards)...");
+    const TrainingEscrow = await hre.ethers.getContractFactory("TrainingEscrow");
+    const escrow = await TrainingEscrow.deploy(deployed.MDTToken, 5000); // 50% slash rate
+    await escrow.waitForDeployment();
+    deployed.TrainingEscrow = await escrow.getAddress();
+    success(`TrainingEscrow: ${deployed.TrainingEscrow}`);
+    info("Slash rate: 50% (5000 bps)");
+
+    // ─────────────────────────────────────────
     // Phase 4: Configuration & Linking
     // ─────────────────────────────────────────
     banner("Phase 4: Contract Configuration");
@@ -285,7 +305,7 @@ async function main() {
     console.log("  1. Verify contracts on block explorer");
     console.log("  2. Test AI Oracle flow (requestAI → fulfillRequest)");
     console.log("  3. Test staking flow (lock → unlock with bonus)");
-    console.log("  4. Create training job via GradientAggregator");
+    console.log("  4. Create training job via GradientAggregator + TrainingEscrow");
     console.log("  5. Connect dashboard frontend to deployed addresses");
     console.log("  6. Record demo video for hackathon submission");
     console.log("");
