@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from web3 import Web3
 
@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
 class RequestStatus(IntEnum):
     """AI request status."""
+
     PENDING = 0
     FULFILLED = 1
     CANCELLED = 2
@@ -31,6 +32,7 @@ class RequestStatus(IntEnum):
 @dataclass
 class AIRequest:
     """AI request details."""
+
     requester: str
     model_hash: bytes
     input_data: bytes
@@ -126,16 +128,14 @@ class OracleClient:
             >>> tx = client.oracle.request_ai(model, b"Hello, AI!", payment_ether=0.1)
         """
         payment_wei = Web3.to_wei(payment_ether, "ether")
-        tx = self._contract.functions.requestAI(
-            model_hash, input_data, timeout
-        ).build_transaction({"value": payment_wei})
+        tx = self._contract.functions.requestAI(model_hash, input_data, timeout).build_transaction(
+            {"value": payment_wei}
+        )
         return self._client.send_tx(tx)
 
     def cancel_request(self, request_id: bytes) -> str:
         """Cancel pending request and get refund."""
-        tx = self._contract.functions.cancelRequest(
-            request_id
-        ).build_transaction({})
+        tx = self._contract.functions.cancelRequest(request_id).build_transaction({})
         return self._client.send_tx(tx)
 
     # ── Write (Miner) ──────────────────────────────────────
@@ -164,18 +164,14 @@ class OracleClient:
 
     def mark_expired(self, request_id: bytes) -> str:
         """Mark an expired request for refund."""
-        tx = self._contract.functions.markExpired(
-            request_id
-        ).build_transaction({})
+        tx = self._contract.functions.markExpired(request_id).build_transaction({})
         return self._client.send_tx(tx)
 
     # ── Admin ───────────────────────────────────────────────
 
     def approve_model(self, model_hash: bytes) -> str:
         """Approve a model for inference (owner only)."""
-        tx = self._contract.functions.approveModel(
-            model_hash
-        ).build_transaction({})
+        tx = self._contract.functions.approveModel(model_hash).build_transaction({})
         return self._client.send_tx(tx)
 
     def set_zkml_verifier(self, verifier_address: str) -> str:
@@ -187,10 +183,60 @@ class OracleClient:
 
     def set_protocol_fee(self, fee_bps: int) -> str:
         """Set protocol fee in basis points (owner only, max 1000 = 10%)."""
-        tx = self._contract.functions.setProtocolFee(
-            fee_bps
+        tx = self._contract.functions.setProtocolFee(fee_bps).build_transaction({})
+        return self._client.send_tx(tx)
+
+    def register_fulfiller(self, fulfiller: str) -> str:
+        """
+        Register an address as an authorized fulfiller (owner only).
+
+        Fulfillers MUST be registered before calling fulfill_request().
+        The contract requires registeredFulfillers[msg.sender] == true.
+
+        Args:
+            fulfiller: Address to authorize as fulfiller
+
+        Returns:
+            Transaction hash
+        """
+        tx = self._contract.functions.registerFulfiller(
+            Web3.to_checksum_address(fulfiller)
         ).build_transaction({})
         return self._client.send_tx(tx)
+
+    def revoke_fulfiller(self, fulfiller: str) -> str:
+        """Revoke fulfiller authorization (owner only)."""
+        tx = self._contract.functions.revokeFulfiller(
+            Web3.to_checksum_address(fulfiller)
+        ).build_transaction({})
+        return self._client.send_tx(tx)
+
+    def revoke_model(self, model_hash: bytes) -> str:
+        """Revoke a previously approved model (owner only)."""
+        tx = self._contract.functions.revokeModel(model_hash).build_transaction({})
+        return self._client.send_tx(tx)
+
+    def set_default_timeout(self, timeout: int) -> str:
+        """Set the default timeout for AI requests in blocks (owner only)."""
+        tx = self._contract.functions.setDefaultTimeout(timeout).build_transaction({})
+        return self._client.send_tx(tx)
+
+    def withdraw_fees(self) -> str:
+        """Withdraw accumulated protocol fees (owner only)."""
+        tx = self._contract.functions.withdrawFees().build_transaction({})
+        return self._client.send_tx(tx)
+
+    def get_result(self, request_id: bytes) -> bytes:
+        """
+        Get the result data of a fulfilled request.
+
+        Args:
+            request_id: 32-byte request identifier
+
+        Returns:
+            Result bytes (empty if not yet fulfilled)
+        """
+        return self._contract.functions.getResult(request_id).call()
 
     def __repr__(self) -> str:
         try:

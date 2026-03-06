@@ -76,6 +76,37 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "coldkey",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "delegatedStake",
+        "type": "uint256"
+      }
+    ],
+    "name": "DelegatedStakeWarning",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "netuid",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "uid",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "hotkey",
         "type": "address"
       },
@@ -87,6 +118,31 @@
       }
     ],
     "name": "EmissionClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "netuid",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newShare",
+        "type": "uint256"
+      }
+    ],
+    "name": "EmissionShareUpdated",
     "type": "event"
   },
   {
@@ -355,6 +411,43 @@
       }
     ],
     "name": "TrustUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "netuid",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "uid",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "trust",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "emission",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "alignment",
+        "type": "uint256"
+      }
+    ],
+    "name": "ValidatorScored",
     "type": "event"
   },
   {
@@ -963,6 +1056,65 @@
       },
       {
         "internalType": "uint16",
+        "name": "uid",
+        "type": "uint16"
+      }
+    ],
+    "name": "getValidatorScore",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "trust",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rank",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "stake",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "delegatedStake",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "effectivePower",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "emission",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "incentive",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "active",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "netuid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint16",
         "name": "validatorUid",
         "type": "uint16"
       }
@@ -1317,6 +1469,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint16",
+        "name": "validatorUid",
+        "type": "uint16"
+      },
+      {
         "internalType": "uint16[]",
         "name": "uids",
         "type": "uint16[]"
@@ -1455,6 +1612,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "nextUid",
+        "type": "uint256"
+      },
+      {
         "internalType": "bool",
         "name": "active",
         "type": "bool"
@@ -1526,6 +1688,24 @@
       }
     ],
     "name": "undelegate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "netuid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newShare",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateEmissionShare",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

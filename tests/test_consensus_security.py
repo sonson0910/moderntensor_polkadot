@@ -1,15 +1,17 @@
 """
 Quick test: verify SubnetRegistry v2 (consensus security) on Polkadot Hub TestNet.
 """
-import os, sys, time
+
+import os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sdk.polkadot.client import PolkadotClient
-from sdk.polkadot.subnet import NodeType
 from web3 import Web3
 
-PRIVATE_KEY = os.environ.get("TESTNET_PRIVATE_KEY", "0x3230cd6d7ea8c1666bcec73a86a1a8d86ad23198bf29554bf11f61bed41452fb")
+PRIVATE_KEY = os.environ.get(
+    "TESTNET_PRIVATE_KEY", "0x3230cd6d7ea8c1666bcec73a86a1a8d86ad23198bf29554bf11f61bed41452fb"
+)
 DEPLOYMENT_PATH = "luxtensor/contracts/deployments-polkadot.json"
 
 client = PolkadotClient(
@@ -24,6 +26,7 @@ w3 = client.w3
 passed = 0
 failed = 0
 
+
 def step(name, func):
     global passed, failed
     try:
@@ -36,6 +39,7 @@ def step(name, func):
         print(f"  ❌ {name}: {err}")
         failed += 1
         return None
+
 
 print("=" * 60)
 print("  SubnetRegistry v2 — Consensus Security Verification")
@@ -59,30 +63,36 @@ print("TEST 2: Create Subnet + Self-Vote Protection")
 print("━" * 60)
 
 registry_addr = subnet._contract.address
-step("Approve 100 MDT for SubnetRegistry",
-     lambda: token.approve(registry_addr, Web3.to_wei(100, "ether")))
+step(
+    "Approve 100 MDT for SubnetRegistry",
+    lambda: token.approve(registry_addr, Web3.to_wei(100, "ether")),
+)
 
-result = step("Create subnet 'SecureAI-Test'",
-              lambda: subnet.create_subnet("SecureAI-Test", max_nodes=128, tempo=100))
+result = step(
+    "Create subnet 'SecureAI-Test'",
+    lambda: subnet.create_subnet("SecureAI-Test", max_nodes=128, tempo=100),
+)
 if result:
     tx_hash, netuid = result
     print(f"  → Assigned netuid: {netuid}")
 
-    info = step(f"Get subnet #{netuid}",
-                lambda: f"name={subnet.get_subnet(netuid).name}, active={subnet.get_subnet(netuid).active}")
+    info = step(
+        f"Get subnet #{netuid}",
+        lambda: f"name={subnet.get_subnet(netuid).name}, active={subnet.get_subnet(netuid).active}",
+    )
 
     # Register as miner
-    step(f"Register miner in subnet #{netuid}",
-         lambda: subnet.register_miner(netuid))
+    step(f"Register miner in subnet #{netuid}", lambda: subnet.register_miner(netuid))
 
-    step(f"Is registered?",
-         lambda: f"registered={subnet.is_registered(netuid)}")
+    step(f"Is registered?", lambda: f"registered={subnet.is_registered(netuid)}")
 
     # Get node info (should include trust)
     uid = step(f"Get UID", lambda: subnet.get_uid(netuid))
     if uid is not None:
-        node = step(f"Get node #{uid} (with trust)",
-                    lambda: f"trust={subnet.get_node(netuid, uid).trust_float:.2f}, type={'MINER' if subnet.get_node(netuid, uid).is_miner else 'VALIDATOR'}")
+        node = step(
+            f"Get node #{uid} (with trust)",
+            lambda: f"trust={subnet.get_node(netuid, uid).trust_float:.2f}, type={'MINER' if subnet.get_node(netuid, uid).is_miner else 'VALIDATOR'}",
+        )
 
     # Self-vote protection test: try to also register as validator (should FAIL)
     print()
@@ -106,8 +116,7 @@ print("TEST 3: Slashing Mechanism")
 print("━" * 60)
 
 if result and uid is not None:
-    step(f"Slash node #{uid} (5%)",
-         lambda: subnet.slash_node(netuid, uid, 500, "Test slash"))
+    step(f"Slash node #{uid} (5%)", lambda: subnet.slash_node(netuid, uid, 500, "Test slash"))
 
 # ── 4. Trust score ────────────────────────────────────────
 print()
@@ -116,8 +125,9 @@ print("TEST 4: Trust Score Query")
 print("━" * 60)
 
 if result and uid is not None:
-    trust = step(f"Get trust score for node #{uid}",
-                 lambda: f"trust={subnet.get_trust(netuid, uid):.4f}")
+    trust = step(
+        f"Get trust score for node #{uid}", lambda: f"trust={subnet.get_trust(netuid, uid):.4f}"
+    )
 
 # ── 5. Set weights (legacy, backward compat) ─────────────
 print()
@@ -129,7 +139,7 @@ print("━" * 60)
 # we can't set weights. Test that it correctly rejects.
 if result:
     try:
-        subnet.set_weights(netuid, [0], [100])
+        subnet.set_weights(netuid, 0, [0], [100])
         print("  ❌ Should have rejected — we are a miner, not validator!")
         failed += 1
     except Exception as e:

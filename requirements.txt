@@ -4,6 +4,10 @@ cryptography==42.0.8
 ecdsa==0.19.1
 pycryptodome==3.23.0
 
+# Ethereum / EVM interaction (required for Polkadot Hub pallet-revive)
+web3>=6.15.0
+eth-account>=0.11.0
+
 # Web framework and API
 fastapi==0.115.6
 uvicorn==0.34.0

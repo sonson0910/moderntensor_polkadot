@@ -1443,8 +1443,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\LuxToken.sol": {
-      "lastModificationDate": 1772600898258,
-      "contentHash": "3c7d30bce7d178e2ce1aba2dfa04e9da",
+      "lastModificationDate": 1772627327521,
+      "contentHash": "1a15413bf060417ca4215c8477c5f501",
       "sourceName": "src/templates/LuxToken.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1607,8 +1607,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\TrainingEscrow.sol": {
-      "lastModificationDate": 1772606143164,
-      "contentHash": "1dc1e0cae707a12d0e4e7724156fbf2f",
+      "lastModificationDate": 1772773837791,
+      "contentHash": "44b1673598efdf177111755f960b3ab6",
       "sourceName": "src/TrainingEscrow.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1691,8 +1691,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\AIOracle.sol": {
-      "lastModificationDate": 1772600898258,
-      "contentHash": "b8ce24cacfbcf1bd74c79661c433f3f8",
+      "lastModificationDate": 1772630770996,
+      "contentHash": "6aa19fdbcf4415a399fc799b551f1a12",
       "sourceName": "src/templates/AIOracle.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1732,8 +1732,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\ZkMLVerifier.sol": {
-      "lastModificationDate": 1772600898259,
-      "contentHash": "7e1bf6c4b351c1e4871e900651018daf",
+      "lastModificationDate": 1772630771022,
+      "contentHash": "7bcd50bce6ecc19c79fd16b4e0fea2c3",
       "sourceName": "src/templates/ZkMLVerifier.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1772,8 +1772,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\ExampleGame.sol": {
-      "lastModificationDate": 1772600898258,
-      "contentHash": "0d8e18bbe10b6d40c364aa5e981e80ca",
+      "lastModificationDate": 1772627327521,
+      "contentHash": "b7dec4861dd83a9fe5b4ee03a99c0759",
       "sourceName": "src/templates/ExampleGame.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1811,8 +1811,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\SubnetRegistry.sol": {
-      "lastModificationDate": 1772606143245,
-      "contentHash": "f8b22f06d1b5a2163a96e67d6eadf17d",
+      "lastModificationDate": 1772776723669,
+      "contentHash": "7ab52338f2a625c1449fa7e75089e930",
       "sourceName": "src/SubnetRegistry.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1853,8 +1853,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\MDTVesting.sol": {
-      "lastModificationDate": 1772606143138,
-      "contentHash": "2153cce79aed08432510473a13adc1a0",
+      "lastModificationDate": 1772773808845,
+      "contentHash": "3bef98aa7d28cbb291ff69e5213ff6cd",
       "sourceName": "src/MDTVesting.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1895,8 +1895,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\MDTStaking.sol": {
-      "lastModificationDate": 1772606143126,
-      "contentHash": "702b5b1c8b69952181490cf7f27ea61f",
+      "lastModificationDate": 1772630770982,
+      "contentHash": "dc197f71957111f16f47041a7c0a00b7",
       "sourceName": "src/MDTStaking.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1937,8 +1937,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\GradientAggregator.sol": {
-      "lastModificationDate": 1772606143138,
-      "contentHash": "81814568ea492b9ec7629e9871bac376",
+      "lastModificationDate": 1772630770996,
+      "contentHash": "9e70e82b407fa06f95492c9ca6c0615e",
       "sourceName": "src/GradientAggregator.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -2100,8 +2100,8 @@
       ]
     },
     "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\LuxNFT.sol": {
-      "lastModificationDate": 1772600898258,
-      "contentHash": "2b804add9865ccbd425c8f271a16db17",
+      "lastModificationDate": 1772625828872,
+      "contentHash": "b655300ca5ae3d920ce4d57bf6af0f6f",
       "sourceName": "src/templates/LuxNFT.sol",
       "solcConfig": {
         "version": "0.8.28",

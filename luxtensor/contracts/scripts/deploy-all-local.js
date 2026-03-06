@@ -1,7 +1,8 @@
 /**
  * Deploy ALL ModernTensor contracts to local Hardhat node
  *
- * Deploys: MDTToken, MDTVesting, MDTStaking, ZkMLVerifier, AIOracle, SubnetRegistry
+ * Deploys: MDTToken, MDTVesting, MDTStaking, ZkMLVerifier, AIOracle,
+ *          SubnetRegistry, GradientAggregator, TrainingEscrow
  * Then: TGE, approvals, fulfiller registration
  *
  * Usage: npx hardhat run scripts/deploy-all-local.js --network localhost
@@ -72,14 +73,29 @@ async function main() {
     const subnetAddr = await subnet.getAddress();
     console.log("✅ SubnetRegistry:", subnetAddr);
 
+    // 7. GradientAggregator
+    console.log("📝 Deploying GradientAggregator...");
+    const GradientAggregator = await hre.ethers.getContractFactory("GradientAggregator");
+    const gradAgg = await GradientAggregator.deploy(tokenAddr);
+    await gradAgg.waitForDeployment();
+    const gradAggAddr = await gradAgg.getAddress();
+    console.log("✅ GradientAggregator:", gradAggAddr);
+
+    // 8. TrainingEscrow
+    console.log("📝 Deploying TrainingEscrow...");
+    const TrainingEscrow = await hre.ethers.getContractFactory("TrainingEscrow");
+    const escrow = await TrainingEscrow.deploy(tokenAddr, 5000); // 50% slash rate
+    await escrow.waitForDeployment();
+    const escrowAddr = await escrow.getAddress();
+    console.log("✅ TrainingEscrow:", escrowAddr);
+
     // ── Post-deploy setup ──
     console.log("\n🔧 Post-deploy setup...");
 
-    // TGE: Mint initial tokens to deployer
-    // Category 0=EmissionRewards, 1=EcosystemGrants, etc.
-    console.log("  Minting tokens (EcosystemGrants → deployer)...");
-    const mintAmount = hre.ethers.parseEther("100000"); // 100k MDT
-    await token.mintCategory(1, deployer.address, mintAmount); // Category 1 = EcosystemGrants
+    // TGE: Execute token generation event
+    // Category 0=EmissionRewards — needed for subnet emission funding
+    console.log("  Executing TGE (EmissionRewards → deployer)...");
+    await token.executeTGE(0, deployer.address); // Category 0 = EmissionRewards
     const balance = await token.balanceOf(deployer.address);
     console.log("  Deployer MDT:", hre.ethers.formatEther(balance));
 
@@ -128,6 +144,8 @@ async function main() {
         ZkMLVerifier: zkmlAddr,
         AIOracle: oracleAddr,
         SubnetRegistry: subnetAddr,
+        GradientAggregator: gradAggAddr,
+        TrainingEscrow: escrowAddr,
     };
 
     fs.writeFileSync("deployments-local.json", JSON.stringify(deployment, null, 2));

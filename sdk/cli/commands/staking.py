@@ -14,8 +14,13 @@ from typing import Optional
 from web3 import Web3
 
 from sdk.cli.ui import (
-    print_error, print_success, print_info, print_warning,
-    console, create_table, print_panel, spinner
+    print_error,
+    print_success,
+    print_info,
+    print_warning,
+    console,
+    create_table,
+    spinner,
 )
 from sdk.cli.config import get_network_config
 
@@ -23,6 +28,7 @@ from sdk.cli.config import get_network_config
 def _get_client(network: str, key: Optional[str] = None):
     """Create a PolkadotClient for the given network."""
     from sdk.polkadot.client import PolkadotClient
+
     private_key = key or os.environ.get("PRIVATE_KEY")
     if not private_key:
         print_error("No private key. Use --key or set PRIVATE_KEY env var.")
@@ -65,10 +71,13 @@ def staking_info(network: str, key: Optional[str], address: Optional[str]):
         with spinner("Fetching staking info..."):
             stake_info = s.get_stake_info(target)
 
-        table = create_table("Staking Info", [
-            ("Metric", "cyan"),
-            ("Value", "green"),
-        ])
+        table = create_table(
+            "Staking Info",
+            [
+                ("Metric", "cyan"),
+                ("Value", "green"),
+            ],
+        )
         table.add_row("Address", target)
         table.add_row("Active Stakes", str(stake_info.active_stakes))
         table.add_row("Total Locked", f"{stake_info.total_locked_ether:.4f} MDT")
@@ -104,14 +113,21 @@ def staking_stakes(network: str, key: Optional[str], address: Optional[str]):
             print_warning("No stake locks found.")
             return
 
-        table = create_table(f"Stake Locks ({len(stakes)} total)", [
-            ("#", "cyan"),
-            ("Amount", "green"),
-            ("Bonus", "yellow"),
-            ("Status", "white"),
-        ])
+        table = create_table(
+            f"Stake Locks ({len(stakes)} total)",
+            [
+                ("#", "cyan"),
+                ("Amount", "green"),
+                ("Bonus", "yellow"),
+                ("Status", "white"),
+            ],
+        )
         for i, lock in enumerate(stakes):
-            status = "🔓 Unlockable" if lock.can_unlock else ("✅ Withdrawn" if lock.withdrawn else "🔒 Locked")
+            status = (
+                "🔓 Unlockable"
+                if lock.can_unlock
+                else ("✅ Withdrawn" if lock.withdrawn else "🔒 Locked")
+            )
             table.add_row(
                 str(i),
                 f"{lock.amount_ether:.4f} MDT",

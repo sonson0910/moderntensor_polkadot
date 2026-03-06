@@ -19,8 +19,15 @@ import click
 from typing import Optional
 
 from sdk.cli.ui import (
-    print_error, print_success, print_info, print_warning,
-    confirm_action, console, create_table, print_panel, spinner
+    print_error,
+    print_success,
+    print_info,
+    print_warning,
+    confirm_action,
+    console,
+    create_table,
+    print_panel,
+    spinner,
 )
 from sdk.cli.config import get_network_config
 
@@ -38,7 +45,7 @@ def _get_client(network: str, private_key: Optional[str] = None):
     )
 
 
-@click.group(name='subnet', short_help='Manage subnets and neurons')
+@click.group(name="subnet", short_help="Manage subnets and neurons")
 @click.pass_context
 def subnet(ctx):
     """
@@ -54,13 +61,14 @@ def subnet(ctx):
 # Subnet CRUD
 # ═══════════════════════════════════════════════════════
 
-@subnet.command('create')
-@click.option('--name', required=True, help='Subnet name (max 64 chars)')
-@click.option('--max-nodes', default=256, help='Maximum neurons allowed')
-@click.option('--min-stake', default=0.0, type=float, help='Minimum stake in MDT')
-@click.option('--tempo', default=360, type=int, help='Blocks per epoch')
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key for signing')
+
+@subnet.command("create")
+@click.option("--name", required=True, help="Subnet name (max 64 chars)")
+@click.option("--max-nodes", default=256, help="Maximum neurons allowed")
+@click.option("--min-stake", default=0.0, type=float, help="Minimum stake in MDT")
+@click.option("--tempo", default=360, type=int, help="Blocks per epoch")
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key for signing")
 @click.pass_context
 def create_subnet(ctx, name, max_nodes, min_stake, tempo, network, private_key):
     """
@@ -90,9 +98,9 @@ def create_subnet(ctx, name, max_nodes, min_stake, tempo, network, private_key):
         print_error(f"Failed to create subnet: {e}")
 
 
-@subnet.command('list')
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
+@subnet.command("list")
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
 @click.pass_context
 def list_subnets(ctx, network, private_key):
     """
@@ -109,7 +117,9 @@ def list_subnets(ctx, network, private_key):
             print_warning("No subnets found")
             return
 
-        table = create_table("Subnets", ["NetUID", "Name", "Owner", "Nodes", "Emission%", "Tempo", "Active"])
+        table = create_table(
+            "Subnets", ["NetUID", "Name", "Owner", "Nodes", "Emission%", "Tempo", "Active"]
+        )
         for i in range(1, count + 1):
             try:
                 info = client.subnet.get_subnet(i)
@@ -132,10 +142,10 @@ def list_subnets(ctx, network, private_key):
         print_error(f"Failed to list subnets: {e}")
 
 
-@subnet.command('info')
-@click.argument('netuid', type=int)
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
+@subnet.command("info")
+@click.argument("netuid", type=int)
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
 @click.pass_context
 def subnet_info(ctx, netuid, network, private_key):
     """
@@ -167,14 +177,15 @@ def subnet_info(ctx, netuid, network, private_key):
 # Node Registration
 # ═══════════════════════════════════════════════════════
 
-@subnet.command('register')
-@click.argument('netuid', type=int)
-@click.option('--role', required=True, type=click.Choice(['miner', 'validator']), help='Node role')
-@click.option('--stake', default=0.0, type=float, help='Initial stake in MDT')
-@click.option('--hotkey', default=None, help='Hotkey address (defaults to caller)')
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
-@click.option('--yes', is_flag=True, help='Skip confirmation')
+
+@subnet.command("register")
+@click.argument("netuid", type=int)
+@click.option("--role", required=True, type=click.Choice(["miner", "validator"]), help="Node role")
+@click.option("--stake", default=0.0, type=float, help="Initial stake in MDT")
+@click.option("--hotkey", default=None, help="Hotkey address (defaults to caller)")
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
+@click.option("--yes", is_flag=True, help="Skip confirmation")
 @click.pass_context
 def register(ctx, netuid, role, stake, hotkey, network, private_key, yes):
     """
@@ -214,12 +225,12 @@ def register(ctx, netuid, role, stake, hotkey, network, private_key, yes):
         print_error(f"Failed to register: {e}")
 
 
-@subnet.command('deregister')
-@click.argument('netuid', type=int)
-@click.argument('uid', type=int)
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
-@click.option('--yes', is_flag=True, help='Skip confirmation')
+@subnet.command("deregister")
+@click.argument("netuid", type=int)
+@click.argument("uid", type=int)
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
+@click.option("--yes", is_flag=True, help="Skip confirmation")
 @click.pass_context
 def deregister(ctx, netuid, uid, network, private_key, yes):
     """
@@ -242,23 +253,47 @@ def deregister(ctx, netuid, uid, network, private_key, yes):
         print_error(f"Failed to deregister: {e}")
 
 
+@subnet.command("update-emission")
+@click.argument("netuid", type=int)
+@click.argument("share_bps", type=int)
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
+@click.pass_context
+def update_emission(ctx, netuid, share_bps, network, private_key):
+    """
+    Update subnet emission share (basis points, 1-10000)
+
+    Example:
+        mtcli subnet update-emission 1 2000
+    """
+    try:
+        client = _get_client(network, private_key)
+        with spinner("Updating emission share..."):
+            tx_hash = client.subnet.update_emission_share(netuid, share_bps)
+        print_success(f"Emission share updated to {share_bps} bps! TX: {tx_hash}")
+    except Exception as e:
+        print_error(f"Failed to update emission share: {e}")
+
+
 # ═══════════════════════════════════════════════════════
 # Weight Setting
 # ═══════════════════════════════════════════════════════
 
-@subnet.command('set-weights')
-@click.argument('netuid', type=int)
-@click.option('--uids', required=True, help='Comma-separated miner UIDs')
-@click.option('--weights', required=True, help='Comma-separated weights (0-65535)')
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
+
+@subnet.command("set-weights")
+@click.argument("netuid", type=int)
+@click.option("--validator-uid", required=True, type=int, help="Validator UID to set weights for")
+@click.option("--uids", required=True, help="Comma-separated miner UIDs")
+@click.option("--weights", required=True, help="Comma-separated weights (0-65535)")
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
 @click.pass_context
-def set_weights(ctx, netuid, uids, weights, network, private_key):
+def set_weights(ctx, netuid, validator_uid, uids, weights, network, private_key):
     """
-    Set weights on miners (validators only)
+    Set weights on miners (admin override)
 
     Example:
-        mtcli subnet set-weights 1 --uids "0,1,2" --weights "100,200,50"
+        mtcli subnet set-weights 1 --validator-uid 0 --uids "0,1,2" --weights "100,200,50"
     """
     try:
         client = _get_client(network, private_key)
@@ -275,7 +310,7 @@ def set_weights(ctx, netuid, uids, weights, network, private_key):
             print_info(f"  UID {u} → weight {w}")
 
         with spinner("Setting weights..."):
-            tx_hash = client.subnet.set_weights(netuid, uid_list, weight_list)
+            tx_hash = client.subnet.set_weights(netuid, validator_uid, uid_list, weight_list)
 
         print_success(f"Weights set! TX: {tx_hash}")
 
@@ -287,10 +322,11 @@ def set_weights(ctx, netuid, uids, weights, network, private_key):
 # Metagraph
 # ═══════════════════════════════════════════════════════
 
-@subnet.command('metagraph')
-@click.argument('netuid', type=int)
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
+
+@subnet.command("metagraph")
+@click.argument("netuid", type=int)
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
 @click.pass_context
 def metagraph(ctx, netuid, network, private_key):
     """
@@ -313,7 +349,7 @@ def metagraph(ctx, netuid, network, private_key):
 
         table = create_table(
             f"Metagraph — Subnet {netuid}",
-            ["UID", "Type", "Hotkey", "Stake (MDT)", "Rank", "Emission (MDT)", "Active"]
+            ["UID", "Type", "Hotkey", "Stake (MDT)", "Rank", "Emission (MDT)", "Active"],
         )
 
         for node in meta.nodes:
@@ -330,6 +366,7 @@ def metagraph(ctx, netuid, network, private_key):
         console.print(table)
         print_info(f"Miners: {len(meta.miners)}  Validators: {len(meta.validators)}")
         from web3 import Web3
+
         total_stake = Web3.from_wei(meta.total_stake, "ether")
         print_info(f"Total Stake: {total_stake:.4f} MDT")
 
@@ -341,13 +378,14 @@ def metagraph(ctx, netuid, network, private_key):
 # Delegation
 # ═══════════════════════════════════════════════════════
 
-@subnet.command('delegate')
-@click.argument('netuid', type=int)
-@click.argument('validator_uid', type=int)
-@click.option('--amount', required=True, type=float, help='Amount in MDT')
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
-@click.option('--yes', is_flag=True, help='Skip confirmation')
+
+@subnet.command("delegate")
+@click.argument("netuid", type=int)
+@click.argument("validator_uid", type=int)
+@click.option("--amount", required=True, type=float, help="Amount in MDT")
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
+@click.option("--yes", is_flag=True, help="Skip confirmation")
 @click.pass_context
 def delegate_stake(ctx, netuid, validator_uid, amount, network, private_key, yes):
     """
@@ -358,7 +396,9 @@ def delegate_stake(ctx, netuid, validator_uid, amount, network, private_key, yes
     """
     try:
         client = _get_client(network, private_key)
-        if not yes and not confirm_action(f"Delegate {amount} MDT to validator UID {validator_uid}?"):
+        if not yes and not confirm_action(
+            f"Delegate {amount} MDT to validator UID {validator_uid}?"
+        ):
             return
 
         with spinner("Delegating..."):
@@ -370,13 +410,13 @@ def delegate_stake(ctx, netuid, validator_uid, amount, network, private_key, yes
         print_error(f"Failed to delegate: {e}")
 
 
-@subnet.command('undelegate')
-@click.argument('netuid', type=int)
-@click.argument('validator_uid', type=int)
-@click.option('--amount', required=True, type=float, help='Amount in MDT')
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
-@click.option('--yes', is_flag=True, help='Skip confirmation')
+@subnet.command("undelegate")
+@click.argument("netuid", type=int)
+@click.argument("validator_uid", type=int)
+@click.option("--amount", required=True, type=float, help="Amount in MDT")
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
+@click.option("--yes", is_flag=True, help="Skip confirmation")
 @click.pass_context
 def undelegate_stake(ctx, netuid, validator_uid, amount, network, private_key, yes):
     """
@@ -387,7 +427,9 @@ def undelegate_stake(ctx, netuid, validator_uid, amount, network, private_key, y
     """
     try:
         client = _get_client(network, private_key)
-        if not yes and not confirm_action(f"Undelegate {amount} MDT from validator UID {validator_uid}?"):
+        if not yes and not confirm_action(
+            f"Undelegate {amount} MDT from validator UID {validator_uid}?"
+        ):
             return
 
         with spinner("Undelegating..."):
@@ -403,11 +445,12 @@ def undelegate_stake(ctx, netuid, validator_uid, amount, network, private_key, y
 # Emission
 # ═══════════════════════════════════════════════════════
 
-@subnet.command('claim')
-@click.argument('netuid', type=int)
-@click.argument('uid', type=int)
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
+
+@subnet.command("claim")
+@click.argument("netuid", type=int)
+@click.argument("uid", type=int)
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
 @click.pass_context
 def claim_emission(ctx, netuid, uid, network, private_key):
     """
@@ -436,10 +479,10 @@ def claim_emission(ctx, netuid, uid, network, private_key):
         print_error(f"Failed to claim: {e}")
 
 
-@subnet.command('run-epoch')
-@click.argument('netuid', type=int)
-@click.option('--network', default='polkadot_testnet', help='Network name')
-@click.option('--private-key', envvar='PRIVATE_KEY', help='Private key')
+@subnet.command("run-epoch")
+@click.argument("netuid", type=int)
+@click.option("--network", default="polkadot_testnet", help="Network name")
+@click.option("--private-key", envvar="PRIVATE_KEY", help="Private key")
 @click.pass_context
 def run_epoch(ctx, netuid, network, private_key):
     """

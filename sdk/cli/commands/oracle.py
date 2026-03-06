@@ -14,16 +14,14 @@ import os
 from typing import Optional
 from web3 import Web3
 
-from sdk.cli.ui import (
-    print_error, print_success, print_info, print_warning,
-    console, create_table, print_panel, spinner
-)
+from sdk.cli.ui import print_error, print_success, print_info, console, create_table, spinner
 from sdk.cli.config import get_network_config
 
 
 def _get_client(network: str, key: Optional[str] = None):
     """Create a PolkadotClient for the given network."""
     from sdk.polkadot.client import PolkadotClient
+
     private_key = key or os.environ.get("PRIVATE_KEY")
     if not private_key:
         print_error("No private key. Use --key or set PRIVATE_KEY env var.")
@@ -57,10 +55,13 @@ def oracle_info(network: str, key: Optional[str]):
         client = _get_client(network, key)
         o = client.oracle
 
-        table = create_table("AI Oracle Status", [
-            ("Metric", "cyan"),
-            ("Value", "green"),
-        ])
+        table = create_table(
+            "AI Oracle Status",
+            [
+                ("Metric", "cyan"),
+                ("Value", "green"),
+            ],
+        )
         table.add_row("Total Requests", str(o.total_requests()))
         table.add_row("Protocol Fee", f"{o.protocol_fee_bps()} bps")
         table.add_row("Contract", str(client._addresses.get("AIOracle", "N/A")))
@@ -77,8 +78,9 @@ def oracle_info(network: str, key: Optional[str]):
 @click.option("--input", "input_data", required=True, help="Input data string")
 @click.option("--payment", default=0.01, type=float, help="Payment in native token (ETH)")
 @click.option("--timeout", default=0, type=int, help="Timeout in blocks (0=default)")
-def oracle_request(network: str, key: Optional[str], model: str,
-                   input_data: str, payment: float, timeout: int):
+def oracle_request(
+    network: str, key: Optional[str], model: str, input_data: str, payment: float, timeout: int
+):
     """Submit an AI inference request with payment."""
     try:
         client = _get_client(network, key)
@@ -107,17 +109,15 @@ def oracle_request(network: str, key: Optional[str], model: str,
 @click.option("--request-id", required=True, help="Request ID (32-byte hex)")
 @click.option("--result", "result_data", required=True, help="AI output data")
 @click.option("--proof", default=None, help="zkML proof hash (optional)")
-def oracle_fulfill(network: str, key: Optional[str], request_id: str,
-                   result_data: str, proof: Optional[str]):
+def oracle_fulfill(
+    network: str, key: Optional[str], request_id: str, result_data: str, proof: Optional[str]
+):
     """Fulfill a pending AI request (miner operation)."""
     try:
         client = _get_client(network, key)
 
         req_id_bytes = bytes.fromhex(request_id.removeprefix("0x"))
-        proof_bytes = (
-            bytes.fromhex(proof.removeprefix("0x")) if proof
-            else b"\x00" * 32
-        )
+        proof_bytes = bytes.fromhex(proof.removeprefix("0x")) if proof else b"\x00" * 32
 
         with spinner("Fulfilling AI request..."):
             tx_hash = client.oracle.fulfill_request(
@@ -146,10 +146,13 @@ def oracle_status(network: str, key: Optional[str], request_id: str):
 
         status_map = {0: "⏳ PENDING", 1: "✅ FULFILLED", 2: "❌ CANCELLED", 3: "⏰ EXPIRED"}
 
-        table = create_table("AI Request Details", [
-            ("Field", "cyan"),
-            ("Value", "green"),
-        ])
+        table = create_table(
+            "AI Request Details",
+            [
+                ("Field", "cyan"),
+                ("Value", "green"),
+            ],
+        )
         table.add_row("Request ID", request_id[:20] + "...")
         table.add_row("Requester", req.requester)
         table.add_row("Status", status_map.get(req.status, str(req.status)))

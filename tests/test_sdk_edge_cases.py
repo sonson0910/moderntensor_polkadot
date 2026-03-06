@@ -13,10 +13,8 @@ Following TDD principles: Each test defines expected behavior first.
 
 import pytest
 import httpx
-from unittest.mock import Mock, patch, MagicMock
-from typing import Generator
+from unittest.mock import Mock, patch
 import asyncio
-import time
 
 # Import SDK components
 import sys
@@ -30,12 +28,7 @@ if str(SDK_ROOT) not in sys.path:
 from sdk.luxtensor_client import LuxtensorClient
 from sdk.errors import (
     RpcError,
-    RpcErrorCode,
     InsufficientFundsError,
-    NonceTooLowError,
-    GasLimitExceededError,
-    RateLimitedError,
-    parse_rpc_error,
 )
 
 # Use standard exceptions for types not defined in SDK
@@ -49,26 +42,24 @@ InvalidAddressError = ValueError
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def client() -> LuxtensorClient:
     """Standard client for testing."""
-    return LuxtensorClient(
-        url="http://localhost:8545",
-        network="testnet",
-        timeout=5
-    )
+    return LuxtensorClient(url="http://localhost:8545", network="testnet", timeout=5)
 
 
 @pytest.fixture
 def mock_httpx_client():
     """Mock HTTP client for simulating network conditions."""
-    with patch('httpx.Client') as mock:
+    with patch("httpx.Client") as mock:
         yield mock
 
 
 # =============================================================================
 # NETWORK FAILURE TESTS
 # =============================================================================
+
 
 class TestNetworkFailures:
     """Tests for network connectivity issues."""
@@ -79,13 +70,16 @@ class TestNetworkFailures:
         WHEN: Client attempts RPC call
         THEN: Should raise LuxConnectionError with clear message
         """
-        with patch.object(client, '_http_client') as mock_http:
+        with patch.object(client, "_http_client") as mock_http:
             mock_http.post.side_effect = httpx.ConnectError("Connection refused")
 
             with pytest.raises(httpx.ConnectError) as exc_info:
                 client.get_block_number()
 
-            assert "Connection refused" in str(exc_info.value) or "connect" in str(exc_info.value).lower()
+            assert (
+                "Connection refused" in str(exc_info.value)
+                or "connect" in str(exc_info.value).lower()
+            )
 
     def test_timeout_raises_timeout_error(self, client: LuxtensorClient):
         """
@@ -93,7 +87,7 @@ class TestNetworkFailures:
         WHEN: Client waits beyond timeout
         THEN: Should raise LuxTimeoutError
         """
-        with patch.object(client, '_http_client') as mock_http:
+        with patch.object(client, "_http_client") as mock_http:
             mock_http.post.side_effect = httpx.TimeoutException("Request timeout")
 
             with pytest.raises(httpx.TimeoutException):
@@ -116,7 +110,7 @@ class TestNetworkFailures:
         WHEN: Client is waiting for response
         THEN: Should raise connection error, not corrupt data
         """
-        with patch.object(client, '_http_client') as mock_http:
+        with patch.object(client, "_http_client") as mock_http:
             mock_http.post.side_effect = httpx.RemoteProtocolError("Connection reset")
 
             with pytest.raises((httpx.RemoteProtocolError, Exception)):
@@ -138,6 +132,7 @@ class TestNetworkFailures:
 # INVALID KEY TESTS
 # =============================================================================
 
+
 class TestInvalidKeys:
     """Tests for invalid cryptographic keys and addresses."""
 
@@ -150,9 +145,9 @@ class TestInvalidKeys:
         invalid_addresses = [
             "not_a_valid_address",
             "0xZZZZZ",  # Invalid hex chars
-            "0x123",    # Too short
-            "",         # Empty
-            None,       # None
+            "0x123",  # Too short
+            "",  # Empty
+            None,  # None
         ]
 
         for addr in invalid_addresses:
@@ -186,7 +181,7 @@ class TestInvalidKeys:
         """
         zero_addr = "0x" + "0" * 40
 
-        with patch.object(client, '_call_rpc') as mock_rpc:
+        with patch.object(client, "_call_rpc") as mock_rpc:
             mock_rpc.return_value = {"balance": 0, "nonce": 0}
             result = client.get_account(zero_addr)
             # Should work - zero address is valid but special
@@ -211,6 +206,7 @@ class TestInvalidKeys:
 # RPC ERROR HANDLING TESTS
 # =============================================================================
 
+
 class TestRPCErrors:
     """Tests for various RPC error responses."""
 
@@ -220,12 +216,12 @@ class TestRPCErrors:
         WHEN: Request reaches node
         THEN: Should raise RPCError with method info
         """
-        with patch.object(client, '_http_client') as mock_http:
+        with patch.object(client, "_http_client") as mock_http:
             mock_response = Mock()
             mock_response.json.return_value = {
                 "jsonrpc": "2.0",
                 "id": 1,
-                "error": {"code": -32601, "message": "Method not found"}
+                "error": {"code": -32601, "message": "Method not found"},
             }
             mock_response.status_code = 200
             mock_http.post.return_value = mock_response
@@ -239,12 +235,12 @@ class TestRPCErrors:
         WHEN: Request sent to node
         THEN: Should raise RPCError with param info
         """
-        with patch.object(client, '_http_client') as mock_http:
+        with patch.object(client, "_http_client") as mock_http:
             mock_response = Mock()
             mock_response.json.return_value = {
                 "jsonrpc": "2.0",
                 "id": 1,
-                "error": {"code": -32602, "message": "Invalid params"}
+                "error": {"code": -32602, "message": "Invalid params"},
             }
             mock_response.status_code = 200
             mock_http.post.return_value = mock_response
@@ -258,12 +254,12 @@ class TestRPCErrors:
         WHEN: Response contains error
         THEN: Should propagate with details
         """
-        with patch.object(client, '_http_client') as mock_http:
+        with patch.object(client, "_http_client") as mock_http:
             mock_response = Mock()
             mock_response.json.return_value = {
                 "jsonrpc": "2.0",
                 "id": 1,
-                "error": {"code": -32603, "message": "Internal error", "data": "Stack trace..."}
+                "error": {"code": -32603, "message": "Internal error", "data": "Stack trace..."},
             }
             mock_response.status_code = 200
             mock_http.post.return_value = mock_response
@@ -277,7 +273,7 @@ class TestRPCErrors:
         WHEN: Too many requests
         THEN: Should raise rate limit error with retry info
         """
-        with patch.object(client, '_http_client') as mock_http:
+        with patch.object(client, "_http_client") as mock_http:
             mock_response = Mock()
             mock_response.status_code = 429
             mock_response.headers = {"Retry-After": "60"}
@@ -293,6 +289,7 @@ class TestRPCErrors:
 # TRANSACTION EDGE CASES
 # =============================================================================
 
+
 class TestTransactionEdgeCases:
     """Tests for transaction submission edge cases."""
 
@@ -302,15 +299,17 @@ class TestTransactionEdgeCases:
         WHEN: Attempting transaction
         THEN: Should raise InsufficientFundsError
         """
-        with patch.object(client, '_call_rpc') as mock_rpc:
+        with patch.object(client, "_call_rpc") as mock_rpc:
             mock_rpc.side_effect = Exception("insufficient funds for transfer")
 
             with pytest.raises((InsufficientFundsError, Exception)) as exc_info:
-                client.send_transaction({
-                    "from": "0x" + "a" * 40,
-                    "to": "0x" + "b" * 40,
-                    "value": 10**30  # Way too much
-                })
+                client.send_transaction(
+                    {
+                        "from": "0x" + "a" * 40,
+                        "to": "0x" + "b" * 40,
+                        "value": 10**30,  # Way too much
+                    }
+                )
 
     def test_nonce_too_low(self, client: LuxtensorClient):
         """
@@ -318,16 +317,18 @@ class TestTransactionEdgeCases:
         WHEN: Submitted to node
         THEN: Should raise appropriate error
         """
-        with patch.object(client, '_call_rpc') as mock_rpc:
+        with patch.object(client, "_call_rpc") as mock_rpc:
             mock_rpc.side_effect = Exception("nonce too low")
 
             with pytest.raises(Exception) as exc_info:
-                client.send_transaction({
-                    "from": "0x" + "a" * 40,
-                    "to": "0x" + "b" * 40,
-                    "value": 1000,
-                    "nonce": 0  # Already used
-                })
+                client.send_transaction(
+                    {
+                        "from": "0x" + "a" * 40,
+                        "to": "0x" + "b" * 40,
+                        "value": 1000,
+                        "nonce": 0,  # Already used
+                    }
+                )
 
             assert "nonce" in str(exc_info.value).lower()
 
@@ -337,16 +338,18 @@ class TestTransactionEdgeCases:
         WHEN: Submitted
         THEN: Should fail with gas-related error
         """
-        with patch.object(client, '_call_rpc') as mock_rpc:
+        with patch.object(client, "_call_rpc") as mock_rpc:
             mock_rpc.side_effect = Exception("gas limit exceeded")
 
             with pytest.raises(Exception):
-                client.send_transaction({
-                    "from": "0x" + "a" * 40,
-                    "to": "0x" + "b" * 40,
-                    "value": 1000,
-                    "gas": 1  # Way too low
-                })
+                client.send_transaction(
+                    {
+                        "from": "0x" + "a" * 40,
+                        "to": "0x" + "b" * 40,
+                        "value": 1000,
+                        "gas": 1,  # Way too low
+                    }
+                )
 
     def test_transaction_replacement_underpriced(self, client: LuxtensorClient):
         """
@@ -354,33 +357,39 @@ class TestTransactionEdgeCases:
         WHEN: Submitted
         THEN: Should fail with underpriced error
         """
-        with patch.object(client, '_call_rpc') as mock_rpc:
+        with patch.object(client, "_call_rpc") as mock_rpc:
             mock_rpc.side_effect = Exception("replacement transaction underpriced")
 
             with pytest.raises(Exception):
-                client.send_transaction({
-                    "from": "0x" + "a" * 40,
-                    "to": "0x" + "b" * 40,
-                    "value": 1000,
-                    "nonce": 5,
-                    "gasPrice": 1  # Too low for replacement
-                })
+                client.send_transaction(
+                    {
+                        "from": "0x" + "a" * 40,
+                        "to": "0x" + "b" * 40,
+                        "value": 1000,
+                        "nonce": 5,
+                        "gasPrice": 1,  # Too low for replacement
+                    }
+                )
 
 
 # =============================================================================
 # DATA VALIDATION TESTS
 # =============================================================================
 
+
 class TestDataValidation:
     """Tests for input data validation."""
 
-    @pytest.mark.parametrize("amount", [
-        -1,           # Negative
-        -1000,        # Large negative
-        float('inf'), # Infinity
-        float('nan'), # NaN
-        "not_a_number",  # String
-    ])
+    @pytest.mark.parametrize(
+        "amount",
+        [
+            -1,  # Negative
+            -1000,  # Large negative
+            float("inf"),  # Infinity
+            float("nan"),  # NaN
+            "not_a_number",  # String
+        ],
+    )
     def test_invalid_amount_rejected(self, client: LuxtensorClient, amount):
         """
         GIVEN: Invalid amount value
@@ -388,18 +397,19 @@ class TestDataValidation:
         THEN: Should raise ValidationError
         """
         with pytest.raises((ValidationError, ValueError, TypeError)):
-            client.send_transaction({
-                "from": "0x" + "a" * 40,
-                "to": "0x" + "b" * 40,
-                "value": amount
-            })
+            client.send_transaction(
+                {"from": "0x" + "a" * 40, "to": "0x" + "b" * 40, "value": amount}
+            )
 
-    @pytest.mark.parametrize("subnet_id", [
-        -1,           # Negative
-        2**64,        # Overflow u64
-        "abc",        # String
-        None,         # None
-    ])
+    @pytest.mark.parametrize(
+        "subnet_id",
+        [
+            -1,  # Negative
+            2**64,  # Overflow u64
+            "abc",  # String
+            None,  # None
+        ],
+    )
     def test_invalid_subnet_id_rejected(self, client: LuxtensorClient, subnet_id):
         """
         GIVEN: Invalid subnet ID
@@ -415,7 +425,7 @@ class TestDataValidation:
         WHEN: Submitted
         THEN: Should handle gracefully (empty result or error)
         """
-        with patch.object(client, '_call_rpc') as mock_rpc:
+        with patch.object(client, "_call_rpc") as mock_rpc:
             mock_rpc.return_value = []
 
             # Should not crash
@@ -426,6 +436,7 @@ class TestDataValidation:
 # =============================================================================
 # CONCURRENT OPERATION TESTS
 # =============================================================================
+
 
 class TestConcurrentOperations:
     """Tests for concurrent operation safety."""
@@ -443,7 +454,7 @@ class TestConcurrentOperations:
 
         def make_request(request_id: int):
             try:
-                with patch.object(client, '_call_rpc') as mock_rpc:
+                with patch.object(client, "_call_rpc") as mock_rpc:
                     mock_rpc.return_value = {"id": request_id}
                     result = client.get_block_number()
                     results[request_id] = result
@@ -475,6 +486,7 @@ class TestConcurrentOperations:
 # RESOURCE CLEANUP TESTS
 # =============================================================================
 
+
 class TestResourceCleanup:
     """Tests for proper resource management."""
 
@@ -503,7 +515,7 @@ class TestResourceCleanup:
         initial_connections = 0  # Would need instrumentation to track
 
         for _ in range(10):
-            with patch.object(client, '_http_client') as mock_http:
+            with patch.object(client, "_http_client") as mock_http:
                 mock_http.post.side_effect = httpx.ConnectError("Failed")
 
                 try:
@@ -518,6 +530,7 @@ class TestResourceCleanup:
 # =============================================================================
 # ASYNC EDGE CASES (if AsyncLuxtensorClient exists)
 # =============================================================================
+
 
 class TestAsyncEdgeCases:
     """Tests for async client edge cases."""

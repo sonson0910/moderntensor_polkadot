@@ -40,8 +40,12 @@ contract ZkMLVerifier is Ownable {
     mapping(bytes32 => VerifiedProof) public verifiedProofs;
 
     /// @notice Configuration
-    bool public devModeEnabled = true; // Allow dev proofs for testing
+    bool public devModeEnabled = false; // [SECURITY] Disabled by default — enable explicitly for testing only
     uint256 public maxProofAge = 1 hours;
+
+    // [SECURITY] Access control for proof verification — prevents proof pollution
+    mapping(address => bool) public authorizedVerifiers;
+    bool public openVerification = true; // When true, anyone can verify (backward compat)
 
     // ========== STRUCTS ==========
 
@@ -87,6 +91,13 @@ contract ZkMLVerifier is Ownable {
     function verify(
         bytes calldata proofData
     ) external returns (bool isValid, bytes32 journalHash) {
+        // [SECURITY] Access control — prevent proof pollution
+        require(
+            openVerification ||
+                authorizedVerifiers[msg.sender] ||
+                msg.sender == owner(),
+            "Not authorized to verify"
+        );
         ProofData memory proof = abi.decode(proofData, (ProofData));
         return _verifyProof(proof);
     }
@@ -104,6 +115,13 @@ contract ZkMLVerifier is Ownable {
         bytes calldata seal,
         uint8 proofType
     ) external returns (bool isValid, bytes32 journalHash) {
+        // [SECURITY] Access control — prevent proof pollution
+        require(
+            openVerification ||
+                authorizedVerifiers[msg.sender] ||
+                msg.sender == owner(),
+            "Not authorized to verify"
+        );
         ProofData memory proof = ProofData({
             imageId: imageId,
             journal: journal,
@@ -130,8 +148,14 @@ contract ZkMLVerifier is Ownable {
             abi.encodePacked(proof.imageId, journalHash, proof.seal)
         );
 
-        // Check if already verified
+        // Check if already verified (with age validation)
         if (verifiedProofs[proofHash].verifiedAt > 0) {
+            // [SECURITY] Enforce proof age — stale proofs must be re-verified
+            require(
+                block.timestamp - verifiedProofs[proofHash].verifiedAt <=
+                    maxProofAge,
+                "Cached proof expired"
+            );
             return (verifiedProofs[proofHash].isValid, journalHash);
         }
 
@@ -396,6 +420,25 @@ contract ZkMLVerifier is Ownable {
     function setMaxProofAge(uint256 age) external onlyOwner {
         require(age >= 1 minutes && age <= 1 days, "Invalid age");
         maxProofAge = age;
+    }
+
+    /**
+     * @notice Authorize an address to call verify/verifyProof
+     * @dev Use this to restrict proof verification to trusted contracts (e.g. AIOracle)
+     */
+    function setAuthorizedVerifier(
+        address verifier,
+        bool authorized
+    ) external onlyOwner {
+        authorizedVerifiers[verifier] = authorized;
+    }
+
+    /**
+     * @notice Toggle open verification mode
+     * @dev When false, only authorizedVerifiers and owner can verify proofs
+     */
+    function setOpenVerification(bool open) external onlyOwner {
+        openVerification = open;
     }
 }
 

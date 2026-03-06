@@ -33,6 +33,7 @@ contract MDTStaking is Ownable, ReentrancyGuard {
 
     uint256 public totalStaked;
     uint256 public totalBonusPaid;
+    uint256 public totalBonusReserved; // [SECURITY] Track outstanding bonus obligations
 
     event Staked(
         address indexed staker,
@@ -78,6 +79,20 @@ contract MDTStaking is Ownable, ReentrancyGuard {
         token.safeTransferFrom(msg.sender, address(this), amount);
 
         uint256 bonusRate = getBonusRate(lockDays);
+
+        // [SECURITY] Check bonus pool solvency BEFORE accepting stake
+        uint256 requiredBonus = (amount * bonusRate) / 10000;
+        uint256 contractBalance = token.balanceOf(address(this));
+        // Available bonus pool = balance - all staked principal - already reserved bonuses
+        uint256 availableForBonus = contractBalance >
+            (totalStaked + totalBonusReserved)
+            ? contractBalance - totalStaked - totalBonusReserved
+            : 0;
+        require(
+            availableForBonus >= requiredBonus,
+            "Insufficient bonus pool: fund more tokens"
+        );
+        totalBonusReserved += requiredBonus;
         uint256 unlockTime = block.timestamp + (lockDays * 1 days);
 
         stakeLocks[msg.sender].push(
@@ -111,6 +126,19 @@ contract MDTStaking is Ownable, ReentrancyGuard {
         uint256 bonusRate = getBonusRate(lockDays);
         uint256 unlockTime = block.timestamp + lockSeconds_;
 
+        // [SECURITY] Check bonus pool solvency
+        uint256 requiredBonus = (amount * bonusRate) / 10000;
+        uint256 contractBalance = token.balanceOf(address(this));
+        uint256 availableForBonus = contractBalance >
+            (totalStaked + totalBonusReserved)
+            ? contractBalance - totalStaked - totalBonusReserved
+            : 0;
+        require(
+            availableForBonus >= requiredBonus,
+            "Insufficient bonus pool: fund more tokens"
+        );
+        totalBonusReserved += requiredBonus;
+
         stakeLocks[msg.sender].push(
             StakeLock({
                 amount: amount,
@@ -140,16 +168,10 @@ contract MDTStaking is Ownable, ReentrancyGuard {
         uint256 bonus = (stake.amount * stake.bonusRate) / 10000;
         uint256 totalReturn = stake.amount + bonus;
 
-        // Verify contract has enough tokens to pay principal + bonus
-        uint256 contractBalance = token.balanceOf(address(this));
-        require(
-            contractBalance >= totalReturn,
-            "Insufficient bonus pool: fund more tokens"
-        );
-
         stake.withdrawn = true;
         totalStaked -= stake.amount;
         totalBonusPaid += bonus;
+        totalBonusReserved -= bonus; // [SECURITY] Release reservation
 
         // Transfer tokens back with bonus
         token.safeTransfer(msg.sender, totalReturn);

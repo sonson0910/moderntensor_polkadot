@@ -1,15 +1,31 @@
 {
-  "network": "polkadot_hub_testnet",
-  "chainId": 420420417,
-  "deployer": "0x0B87601DafEBbcE759A0a6B50d34582d02FCAEA1",
-  "timestamp": "2026-02-13T11:48:00.000Z",
+  "project": "ModernTensor",
+  "description": "Decentralized AI Quality Protocol on Polkadot Hub",
+  "network": "localhost",
+  "rpcUrl": "http://127.0.0.1:8545",
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "timestamp": "2026-03-06T06:23:18.593Z",
+  "deploymentTime": "0.2s",
   "contracts": {
-    "SimpleStorage": "0x636Ef220EF2921d2Eeb4578e38591353b1F41904",
-    "MDTToken": "0x78225b092c91C7DCC4Cc977e328182c34b52cFB5",
-    "MDTVesting": "0xc82773F5aED2064BCEB51131e10fb6270285fFC1",
-    "MDTStaking": "0x042F7bA54ED5Df9e855FFE7274D90705e63666a4",
-    "ZkMLVerifier": "0xa5804B3665d63739A85E9a88Ac39078DFD88a98c",
-    "AIOracle": "0x1e2B05d4980C2250322A8085Aa2e96A3Fc0F25Eb",
-    "SubnetRegistry": "0x6A606a8BcC0D10f9Ca70540742B42AbbFBA81A63"
+    "MDTToken": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "MDTVesting": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "MDTStaking": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "ZkMLVerifier": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "AIOracle": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+    "SubnetRegistry": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+    "GradientAggregator": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+    "TrainingEscrow": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
+  },
+  "models": {
+    "moderntensor-code-review-v1": "0x3302fe2f707ecdf19a814b52ab628a015ea8dda38d29573cabfbd67fd81ea99e",
+    "moderntensor-ai-scoring-v1": "0x6fcaacafb814cb7089ab214d2d2e99f9e8c21a85c214895a33239d9b32cef6c9",
+    "demo-federated-learning-v1": "0xcd3bc5e0667e0fbea9d1045f41d87fe09cea96c8ae621c736b84bc84126b5c48"
+  },
+  "hackathon": {
+    "name": "Polkadot Solidity Hackathon 2026",
+    "track": "Track 1: EVM Smart Contract — AI-powered dApps",
+    "organizer": "OpenGuild",
+    "platform": "DoraHacks",
+    "submission_deadline": "2026-03-20"
   }
 }

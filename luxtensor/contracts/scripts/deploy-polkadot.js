@@ -5,9 +5,9 @@
  * via pallet-revive EVM compatibility layer.
  *
  * Usage:
- *   npx hardhat run scripts/deploy-polkadot.js --network polkadot_testnet
- *   npx hardhat run scripts/deploy-polkadot.js --network paseo_testnet
- *   npx hardhat run scripts/deploy-polkadot.js --network polkadot_mainnet
+ *   npx hardhat run scripts/deploy-polkadot.js --network polkadotTestnet
+ *   npx hardhat run scripts/deploy-polkadot.js --network westend
+ *   npx hardhat run scripts/deploy-polkadot.js --network hardhat
  *
  * Deploys:
  *   1. MDTToken       - ERC20 token (21M supply, category-based minting)
@@ -295,7 +295,7 @@ async function main() {
     console.log(`  📁 Saved to: deployments-polkadot.json`);
 
     console.log("\n  🔗 Verify on Polkadot Explorer:");
-    if (hre.network.name.includes("westend") || hre.network.name === "polkadot_testnet") {
+    if (hre.network.name.includes("westend") || hre.network.name === "polkadotTestnet") {
         console.log(`  https://westend-asset-hub.subscan.io/`);
     } else if (hre.network.name === "polkadot_mainnet") {
         console.log(`  https://assethub-polkadot.subscan.io/`);

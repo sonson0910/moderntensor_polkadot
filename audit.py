@@ -2,7 +2,7 @@
 """Deep Feature Completeness Audit — checks LOGIC not just files."""
 import json, os, ast, re
 
-ROOT = "/Users/sonson/Documents/code/polkadot/hackathon/moderntensor"
+ROOT = os.path.dirname(os.path.abspath(__file__))
 os.chdir(ROOT)
 
 PASS = "[OK     ]"
@@ -11,6 +11,7 @@ WARN = "[WARN   ]"
 
 gaps = []  # Collect all gaps
 
+
 def check(condition, label, detail=""):
     if condition:
         print(f"  {PASS} {label}")
@@ -18,9 +19,11 @@ def check(condition, label, detail=""):
         gaps.append((label, detail))
         print(f"  {FAIL} {label} — {detail}")
 
+
 def warn(label, detail=""):
     gaps.append((label, detail))
     print(f"  {WARN} {label} — {detail}")
+
 
 # ══════════════════════════════════════════════════════════
 print("=" * 70)
@@ -34,10 +37,19 @@ print("\n## 1. SMART CONTRACTS — Function Coverage")
 
 contracts_check = {
     "SubnetRegistry": [
-        "createSubnet", "registerNode", "deregisterNode",
-        "setWeights", "runEpoch", "claimEmission",
-        "delegate", "undelegate", "getMetagraph", "getNode",
-        "getSubnet", "fundEmissionPool", "isRegistered",
+        "createSubnet",
+        "registerNode",
+        "deregisterNode",
+        "setWeights",
+        "runEpoch",
+        "claimEmission",
+        "delegate",
+        "undelegate",
+        "getMetagraph",
+        "getNode",
+        "getSubnet",
+        "fundEmissionPool",
+        "isRegistered",
     ],
     "MDTToken": ["executeTGE", "transfer", "approve", "totalSupply", "balanceOf"],
     "MDTVesting": ["createIDOVesting", "claim", "getVestingInfo", "vestedAmount", "claimable"],
@@ -67,38 +79,63 @@ print("\n## 2. SDK WRAPPERS — Method Coverage")
 
 sdk_checks = {
     "sdk/polkadot/token.py": [
-        "balance_of", "transfer", "approve", "total_supply",
+        "balance_of",
+        "transfer",
+        "approve",
+        "total_supply",
     ],
     "sdk/polkadot/staking.py": [
-        "lock", "unlock", "get_stake",
+        "lock",
+        "unlock",
+        "get_stake",
     ],
     "sdk/polkadot/oracle.py": [
-        "request_ai", "fulfill_request", "approve_model",
+        "request_ai",
+        "fulfill_request",
+        "approve_model",
     ],
     "sdk/polkadot/training.py": [
-        "create_job", "submit_gradient", "register_as_trainer",
+        "create_job",
+        "submit_gradient",
+        "register_as_trainer",
     ],
     "sdk/polkadot/escrow.py": [
-        "stake", "fund_job", "deposit", "refund",
+        "stake",
+        "fund_job",
+        "deposit",
+        "refund",
     ],
     "sdk/polkadot/zkml.py": [
-        "verify", "set_dev_mode",
+        "verify",
+        "set_dev_mode",
     ],
     "sdk/polkadot/subnet.py": [
-        "create_subnet", "register_miner", "register_validator",
-        "deregister", "set_weights", "get_weights",
-        "run_epoch", "claim_emission",
-        "delegate", "undelegate",
-        "get_metagraph", "get_node", "get_subnet",
-        "is_registered", "get_uid",
-        "approve_and_register_miner", "approve_and_register_validator",
+        "create_subnet",
+        "register_miner",
+        "register_validator",
+        "deregister",
+        "set_weights",
+        "get_weights",
+        "run_epoch",
+        "claim_emission",
+        "delegate",
+        "undelegate",
+        "get_metagraph",
+        "get_node",
+        "get_subnet",
+        "is_registered",
+        "get_uid",
+        "approve_and_register_miner",
+        "approve_and_register_validator",
         "approve_and_delegate",
     ],
     "sdk/polkadot/events.py": [
-        "listen", "get_events",
+        "listen",
+        "get_events",
     ],
     "sdk/polkadot/client.py": [
-        "send_tx", "get_eth_balance",
+        "send_tx",
+        "get_eth_balance",
     ],
 }
 
@@ -165,7 +202,11 @@ subnet_cli_cmds = [
 
 # Check if subnet commands exist
 subnet_cli_exists = os.path.exists("sdk/cli/commands/subnet.py")
-check(subnet_cli_exists, "CLI: subnet command group", "sdk/cli/commands/subnet.py missing — no CLI for subnet ops!")
+check(
+    subnet_cli_exists,
+    "CLI: subnet command group",
+    "sdk/cli/commands/subnet.py missing — no CLI for subnet ops!",
+)
 if not subnet_cli_exists:
     for cmd in subnet_cli_cmds:
         check(False, f"CLI: {cmd}", "no subnet CLI module")
@@ -199,8 +240,11 @@ for net in networks:
 # CLI config
 with open("sdk/cli/config.py") as f:
     cli_config = f.read()
-check("polkadot" in cli_config.lower() or "westend" in cli_config.lower(),
-      "CLI config references Polkadot", "CLI config may still reference L1")
+check(
+    "polkadot" in cli_config.lower() or "westend" in cli_config.lower(),
+    "CLI config references Polkadot",
+    "CLI config may still reference L1",
+)
 
 # ══════════════════════════════════════════════════════════
 # 8. DEMO SCRIPT — covers subnet flow
@@ -231,10 +275,16 @@ with open("luxtensor/contracts/scripts/deploy-polkadot.js") as f:
     deploy_src = f.read()
 
 deploy_checks = [
-    "MDTToken", "MDTVesting", "MDTStaking", "SubnetRegistry",
-    "GradientAggregator", "TrainingEscrow", "AIOracle",
-    "ZkMLVerifier", "PaymentEscrow",
-    "createSubnet",      # creates demo subnet
+    "MDTToken",
+    "MDTVesting",
+    "MDTStaking",
+    "SubnetRegistry",
+    "GradientAggregator",
+    "TrainingEscrow",
+    "AIOracle",
+    "ZkMLVerifier",
+    "PaymentEscrow",
+    "createSubnet",  # creates demo subnet
     "fundEmissionPool",  # funds emission
 ]
 for item in deploy_checks:
@@ -267,6 +317,7 @@ for module_path, classes in ai_imports:
 print("\n## 11. LEGACY CLEANUP CHECK")
 
 import subprocess
+
 # Check for dead imports
 dead_imports = ["sdk.luxtensor_pallets", "sdk.client.LuxtensorClient", "from sdk.client import"]
 for dead in dead_imports:
@@ -287,7 +338,11 @@ for exp in exports:
     check(exp in polkadot_init, f"sdk.polkadot exports {exp}")
 
 # Check if SubnetClient is exported
-check("SubnetClient" in polkadot_init, "sdk.polkadot exports SubnetClient", "SubnetClient not exported from polkadot package")
+check(
+    "SubnetClient" in polkadot_init,
+    "sdk.polkadot exports SubnetClient",
+    "SubnetClient not exported from polkadot package",
+)
 
 # ══════════════════════════════════════════════════════════
 # SUMMARY

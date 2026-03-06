@@ -15,7 +15,7 @@ Demonstrates full SDK interaction with deployed contracts:
 Requirements:
     pip install web3 eth-account
     # Deploy contracts first:
-    # cd luxtensor/contracts && npx hardhat run scripts/deploy-polkadot.js --network polkadot_testnet
+    # cd luxtensor/contracts && npx hardhat run scripts/deploy-polkadot.js --network polkadotTestnet
 
 Usage:
     python demo_polkadot.py

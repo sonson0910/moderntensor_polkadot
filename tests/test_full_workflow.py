@@ -15,7 +15,6 @@ Run:  python tests/test_full_workflow.py
 
 import os
 import sys
-import time
 import traceback
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,13 +25,16 @@ from web3 import Web3
 # Config
 # ──────────────────────────────────────────────────────────
 
-PRIVATE_KEY = os.environ.get("TESTNET_PRIVATE_KEY", "0x3230cd6d7ea8c1666bcec73a86a1a8d86ad23198bf29554bf11f61bed41452fb")
+PRIVATE_KEY = os.environ.get(
+    "TESTNET_PRIVATE_KEY", "0x3230cd6d7ea8c1666bcec73a86a1a8d86ad23198bf29554bf11f61bed41452fb"
+)
 DEPLOYMENT_PATH = "luxtensor/contracts/deployments-polkadot.json"
 NETWORK = "polkadot_testnet"
 
 results = []
 passed = 0
 failed = 0
+
 
 def step(name, func):
     global passed, failed
@@ -92,11 +94,10 @@ def main():
 
     if not tge_done:
         # Mint EmissionRewards category (category 0) to deployer
-        tx = step("TGE: Mint EmissionRewards (cat=0)",
-                   lambda: token.execute_tge(
-                       category=token.CAT_EMISSION_REWARDS,
-                       to=deployer
-                   ))
+        tx = step(
+            "TGE: Mint EmissionRewards (cat=0)",
+            lambda: token.execute_tge(category=token.CAT_EMISSION_REWARDS, to=deployer),
+        )
 
         if tx:
             supply_after = token.total_supply()
@@ -122,8 +123,7 @@ def main():
         # Transfer 1 MDT to a burn address (just to test)
         burn_addr = "0x000000000000000000000000000000000000dEaD"
         transfer_amount = Web3.to_wei(1, "ether")  # 1 MDT
-        step("Transfer 1 MDT to burn address",
-             lambda: token.transfer(burn_addr, transfer_amount))
+        step("Transfer 1 MDT to burn address", lambda: token.transfer(burn_addr, transfer_amount))
 
         step("Balance after transfer", lambda: f"{token.balance_of_ether()} MDT")
     else:
@@ -156,19 +156,20 @@ def main():
     print(f"  Dev proof created: seal={seal.hex()[:16]}...")
 
     # 3e. Verify proof on-chain (write tx!)
-    step("Verify dev proof on-chain",
-         lambda: zkml.verify_proof(
-             image_id=test_image_id,
-             journal=journal,
-             seal=seal,
-             proof_type=2  # PROOF_TYPE_DEV
-         ))
+    step(
+        "Verify dev proof on-chain",
+        lambda: zkml.verify_proof(
+            image_id=test_image_id, journal=journal, seal=seal, proof_type=2  # PROOF_TYPE_DEV
+        ),
+    )
 
     # 3f. Check verification result
-    step("Get verification result",
-         lambda: (
-             lambda v: f"valid={v.is_valid}, verifier={v.verifier[:10]}..., at={v.verified_at}"
-         )(zkml.get_verification(proof_hash)))
+    step(
+        "Get verification result",
+        lambda: (
+            lambda v: f"valid={v.is_valid}, verifier={v.verifier[:10]}..., at={v.verified_at}"
+        )(zkml.get_verification(proof_hash)),
+    )
 
     print()
 
@@ -188,19 +189,20 @@ def main():
 
     # 4b. Link ZkML verifier to Oracle
     zkml_addr = client._addresses.get("ZkMLVerifier")
-    step("Set ZkMLVerifier on Oracle",
-         lambda: oracle.set_zkml_verifier(zkml_addr))
+    step("Set ZkMLVerifier on Oracle", lambda: oracle.set_zkml_verifier(zkml_addr))
 
     # 4c. Submit AI request (with 0.01 PAS payment)
     input_data = b'{"code":"def hello(): return 42","lang":"python"}'
     req_count_before = oracle.total_requests()
-    step("Submit AI request (0.01 PAS)",
-         lambda: oracle.request_ai(
-             model_hash=model_hash,
-             input_data=input_data,
-             timeout=0,
-             payment_ether=0.01,
-         ))
+    step(
+        "Submit AI request (0.01 PAS)",
+        lambda: oracle.request_ai(
+            model_hash=model_hash,
+            input_data=input_data,
+            timeout=0,
+            payment_ether=0.01,
+        ),
+    )
 
     req_count_after = oracle.total_requests()
     print(f"  → Requests: {req_count_before} → {req_count_after}")
@@ -229,11 +231,13 @@ def main():
     # 5a. Approve MDT for SubnetRegistry (registration cost burns MDT)
     subnet_addr = client._addresses.get("SubnetRegistry")
     approve_for_subnet = Web3.to_wei(100, "ether")  # 100 MDT should cover registration
-    step("Approve 100 MDT for SubnetRegistry",
-         lambda: token.approve(subnet_addr, approve_for_subnet))
+    step(
+        "Approve 100 MDT for SubnetRegistry", lambda: token.approve(subnet_addr, approve_for_subnet)
+    )
 
     # 5b. Create subnet — returns (tx_hash, netuid)
     create_result = [None]
+
     def do_create_subnet():
         tx_hash, netuid = subnet.create_subnet(
             name="AI-CodeReview",
@@ -253,21 +257,24 @@ def main():
         print(f"  Assigned netuid: {netuid}")
 
         # 5c. Get subnet info (v2 fields)
-        step(f"Get subnet #{netuid}",
-             lambda: (
-                 lambda s: f"name={s.name}, owner={s.owner[:10]}..., max={s.max_nodes}, active={s.active}"
-             )(subnet.get_subnet(netuid)))
+        step(
+            f"Get subnet #{netuid}",
+            lambda: (
+                lambda s: f"name={s.name}, owner={s.owner[:10]}..., max={s.max_nodes}, active={s.active}"
+            )(subnet.get_subnet(netuid)),
+        )
 
         # 5d. Register as MINER
-        step(f"Register MINER in subnet #{netuid}",
-             lambda: subnet.register_miner(
-                 netuid=netuid,
-                 stake_ether=0,
-             ))
+        step(
+            f"Register MINER in subnet #{netuid}",
+            lambda: subnet.register_miner(
+                netuid=netuid,
+                stake_ether=0,
+            ),
+        )
 
         # 5e. Check registration
-        step("Is registered?",
-             lambda: f"registered={subnet.is_registered(netuid)}")
+        step("Is registered?", lambda: f"registered={subnet.is_registered(netuid)}")
 
         # 5f. Verify self-vote protection (v2) — same coldkey can't be both miner+validator
         print("  🔒 Self-Vote Protection Test:")
@@ -278,9 +285,15 @@ def main():
             results.append(("❌", "Self-vote protection", "Should have rejected dual registration"))
             print("  ❌ Self-vote protection: Should have rejected dual registration")
         except Exception as e:
-            if "Already registered" in str(e) or "same subnet" in str(e) or "revert" in str(e).lower():
+            if (
+                "Already registered" in str(e)
+                or "same subnet" in str(e)
+                or "revert" in str(e).lower()
+            ):
                 passed += 1
-                results.append(("✅", "Self-vote protection", "Correctly rejected dual registration"))
+                results.append(
+                    ("✅", "Self-vote protection", "Correctly rejected dual registration")
+                )
                 print(f"  ✅ Self-vote protection: Correctly rejected dual registration")
             else:
                 failed += 1
@@ -288,10 +301,12 @@ def main():
                 print(f"  ❌ Self-vote protection: {str(e)[:100]}")
 
         # 5g. Get node info with v2 fields (including trust)
-        step(f"Get node info (v2: includes trust)",
-             lambda: (
-                 lambda n: f"uid={n.uid}, type={n.node_type}, active={n.active}, trust={n.trust}"
-             )(subnet.get_node(netuid, 0)))
+        step(
+            f"Get node info (v2: includes trust)",
+            lambda: (
+                lambda n: f"uid={n.uid}, type={n.node_type}, active={n.active}, trust={n.trust}"
+            )(subnet.get_node(netuid, 0)),
+        )
 
     print()
 
@@ -310,21 +325,22 @@ def main():
 
         # 6a. Approve MDT for staking contract
         approve_amount = Web3.to_wei(10, "ether")
-        step("Approve 10 MDT for staking",
-             lambda: token.approve(staking_addr, approve_amount))
+        step("Approve 10 MDT for staking", lambda: token.approve(staking_addr, approve_amount))
 
         # 6b. Lock tokens for 30 days (10% bonus)
-        step("Lock 10 MDT for 30 days",
-             lambda: staking.lock(amount_ether=10, lock_days=30))
+        step("Lock 10 MDT for 30 days", lambda: staking.lock(amount_ether=10, lock_days=30))
 
         # 6c. Check stake info
-        step("Stake info after lock",
-             lambda: (
-                 lambda s: f"active={s.active_stakes}, locked={s.total_locked_ether} MDT, bonus={s.pending_bonus_ether} MDT"
-             )(staking.get_stake_info()))
+        step(
+            "Stake info after lock",
+            lambda: (
+                lambda s: f"active={s.active_stakes}, locked={s.total_locked_ether} MDT, bonus={s.pending_bonus_ether} MDT"
+            )(staking.get_stake_info()),
+        )
 
-        step("Total staked (global)",
-             lambda: f"{Web3.from_wei(staking.total_staked(), 'ether')} MDT")
+        step(
+            "Total staked (global)", lambda: f"{Web3.from_wei(staking.total_staked(), 'ether')} MDT"
+        )
     else:
         balance_mdt = Web3.from_wei(current_mdt, "ether")
         print(f"  ⏭️  Insufficient MDT balance ({balance_mdt} MDT), need >= 10 MDT for staking test")
@@ -342,11 +358,12 @@ def main():
 
         # 7a. Commit weights
         commit_result = [None]
+
         def do_commit():
             tx_hash, salt = subnet.commit_weights(
                 netuid=netuid,
-                uids=[0],       # miner UID 0
-                weights=[5000], # weight 0.5
+                uids=[0],  # miner UID 0
+                weights=[5000],  # weight 0.5
             )
             commit_result[0] = salt
             return f"tx={tx_hash[:16]}..., salt={salt.hex()[:16]}..."
@@ -356,13 +373,15 @@ def main():
         # 7b. Attempt reveal (may fail if window hasn't opened yet)
         if commit_result[0] is not None:
             salt = commit_result[0]
-            step("Reveal weights (reveal phase)",
-                 lambda: subnet.reveal_weights(
-                     netuid=netuid,
-                     uids=[0],
-                     weights=[5000],
-                     salt=salt,
-                 ))
+            step(
+                "Reveal weights (reveal phase)",
+                lambda: subnet.reveal_weights(
+                    netuid=netuid,
+                    uids=[0],
+                    weights=[5000],
+                    salt=salt,
+                ),
+            )
     else:
         print("  ⏭️  No subnet created, skipping commit-reveal test")
     print()

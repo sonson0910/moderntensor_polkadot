@@ -5,7 +5,7 @@ Provides reusable test fixtures and helper functions.
 """
 
 import pytest
-from typing import Dict, Any, List
+from typing import List
 from sdk.transactions.types import (
     TransferTransaction,
     StakeTransaction,
@@ -22,7 +22,7 @@ def sample_transfer_tx():
         to_address="addr0987654321fedcba",
         amount=100.0,
         fee=0.01,
-        memo="Test transfer"
+        memo="Test transfer",
     )
 
 
@@ -34,7 +34,7 @@ def sample_stake_tx():
         hotkey="hotkey1234567890abcdef",
         amount=50.0,
         subnet_id=1,
-        fee=0.005
+        fee=0.005,
     )
 
 
@@ -46,7 +46,7 @@ def sample_weight_tx():
         subnet_id=1,
         uids=[1, 2, 3, 4, 5],
         weights=[0.3, 0.25, 0.2, 0.15, 0.1],
-        version_key=1
+        version_key=1,
     )
 
 
@@ -80,7 +80,7 @@ def valid_hotkeys():
 # Helper functions
 class TransactionTestHelper:
     """Helper class for transaction testing."""
-    
+
     @staticmethod
     def create_transfer(amount: float = 100.0, **kwargs) -> TransferTransaction:
         """Create a transfer transaction with defaults."""
@@ -91,7 +91,7 @@ class TransactionTestHelper:
         }
         defaults.update(kwargs)
         return TransferTransaction(**defaults)
-    
+
     @staticmethod
     def create_stake(amount: float = 50.0, **kwargs) -> StakeTransaction:
         """Create a stake transaction with defaults."""
@@ -102,13 +102,13 @@ class TransactionTestHelper:
         }
         defaults.update(kwargs)
         return StakeTransaction(**defaults)
-    
+
     @staticmethod
     def create_weights(num_neurons: int = 5, **kwargs) -> WeightTransaction:
         """Create a weight transaction with defaults."""
         uids = list(range(num_neurons))
         weights = [1.0 / num_neurons] * num_neurons
-        
+
         defaults = {
             "from_address": "addr1234567890",
             "subnet_id": 1,
@@ -129,27 +129,30 @@ def tx_helper():
 # Mock data generators
 class MockDataGenerator:
     """Generate mock data for testing."""
-    
+
     @staticmethod
     def generate_address(prefix: str = "addr") -> str:
         """Generate a mock address."""
         import random
         import string
-        suffix = ''.join(random.choices(string.hexdigits.lower(), k=16))
+
+        suffix = "".join(random.choices(string.hexdigits.lower(), k=16))
         return f"{prefix}{suffix}"
-    
+
     @staticmethod
     def generate_hotkey(prefix: str = "hotkey") -> str:
         """Generate a mock hotkey."""
         import random
         import string
-        suffix = ''.join(random.choices(string.hexdigits.lower(), k=16))
+
+        suffix = "".join(random.choices(string.hexdigits.lower(), k=16))
         return f"{prefix}{suffix}"
-    
+
     @staticmethod
     def generate_weights(n: int, normalize: bool = True) -> List[float]:
         """Generate random weights."""
         import random
+
         weights = [random.random() for _ in range(n)]
         if normalize:
             total = sum(weights)

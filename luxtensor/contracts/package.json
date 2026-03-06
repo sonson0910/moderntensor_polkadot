@@ -12,11 +12,11 @@
     },
     "dependencies": {
         "@openzeppelin/contracts": "^5.0.1",
-        "@parity/hardhat-polkadot": "^0.2.7",
         "dotenv": "^17.3.1"
     },
     "devDependencies": {
         "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+        "@parity/hardhat-polkadot": "^0.2.7",
         "hardhat": "^2.19.4"
     }
 }

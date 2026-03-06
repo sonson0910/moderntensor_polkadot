@@ -31,7 +31,7 @@ Usage:
   PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 python3 e2e_workflow.py
 """
 
-import os, sys, time, json
+import os, sys, json
 from pathlib import Path
 
 # Add project root to path
@@ -93,8 +93,10 @@ def do_connect():
     header("STEP 0 — Connect to Local Hardhat Node")
     w3 = Web3(Web3.HTTPProvider(RPC_URL))
     if not w3.is_connected():
-        fail(f"Cannot connect to {RPC_URL}. Start Hardhat node first:\n"
-             f"  cd luxtensor/contracts && npx hardhat node")
+        fail(
+            f"Cannot connect to {RPC_URL}. Start Hardhat node first:\n"
+            f"  cd luxtensor/contracts && npx hardhat node"
+        )
     chain_id = w3.eth.chain_id
     block = w3.eth.block_number
     ok(f"Connected to {RPC_URL}")
@@ -125,8 +127,10 @@ def do_init_clients(w3):
 
     deploy_file = Path("luxtensor/contracts/deployments-polkadot.json")
     if not deploy_file.exists():
-        fail("Deployment file not found. Deploy contracts first:\n"
-             "  cd luxtensor/contracts && npx hardhat run scripts/deploy-polkadot.js --network luxtensor_local")
+        fail(
+            "Deployment file not found. Deploy contracts first:\n"
+            "  cd luxtensor/contracts && npx hardhat run scripts/deploy-polkadot.js --network luxtensor_local"
+        )
 
     with open(deploy_file) as f:
         deploy_data = json.load(f)
@@ -204,8 +208,7 @@ def do_create_subnet(clients):
     token = owner.token
     # Approve subnet creation cost (100 MDT)
     approve_tx = token.approve(
-        owner._get_contract("SubnetRegistry").address,
-        Web3.to_wei(100, "ether")
+        owner._get_contract("SubnetRegistry").address, Web3.to_wei(100, "ether")
     )
     ok(f"Approved 100 MDT, TX: {approve_tx}")
 
@@ -240,8 +243,7 @@ def do_register_validator(clients, netuid):
     step("5a", f"Approving stake MDT for validator registration...")
     stake_amount = 100  # 100 MDT
     approve_tx = val_client.token.approve(
-        val_client._get_contract("SubnetRegistry").address,
-        Web3.to_wei(stake_amount, "ether")
+        val_client._get_contract("SubnetRegistry").address, Web3.to_wei(stake_amount, "ether")
     )
     ok(f"Approved {stake_amount} MDT, TX: {approve_tx}")
 
@@ -281,8 +283,7 @@ def do_register_miner(clients, netuid):
     step("6a", "Approving stake for miner...")
     stake_amount = 50  # 50 MDT
     approve_tx = miner_client.token.approve(
-        miner_client._get_contract("SubnetRegistry").address,
-        Web3.to_wei(stake_amount, "ether")
+        miner_client._get_contract("SubnetRegistry").address, Web3.to_wei(stake_amount, "ether")
     )
     ok(f"Approved {stake_amount} MDT, TX: {approve_tx}")
 
@@ -358,7 +359,14 @@ def do_setup_zkml_trust(clients):
         else:
             ok(f"Oracle: '{model_full_name}' already approved")
 
-    info("zkML + Oracle ready — 3 AI domains trusted & approved")
+    # Step 7d: Register miner as an authorized Oracle fulfiller
+    step("7d", "Registering miner as Oracle fulfiller...")
+    miner_addr = clients["miner"].address
+    tx = oracle.register_fulfiller(miner_addr)
+    ok(f"Miner registered as fulfiller (TX: {tx})")
+    info(f"  Fulfiller: {miner_addr}")
+
+    info("zkML + Oracle ready — 3 AI domains trusted & approved, fulfiller registered")
 
 
 # ════════════════════════════════════════════════════════
@@ -368,7 +376,7 @@ def do_create_ai_tasks(clients, netuid):
     header("STEP 8 — Validator Creates Multi-Domain Inference Tasks")
 
     val_client = clients["validator"]
-    orch = val_client.orchestrator(netuid)
+    orch = val_client.orchestrator(netuid, validator_uid=0)
 
     step("8a", "Checking oracle status before tasks...")
     total_before = val_client.oracle.total_requests()
@@ -486,10 +494,8 @@ def do_run_epoch(clients, netuid, w3):
 
     # Approve SubnetRegistry to pull MDT
     token.approve(registry_addr, fund_wei)
-    # Fund via owner contract call
-    tx_fn = subnet._contract.functions.fundEmissionPool(fund_wei)
-    tx = tx_fn.build_transaction({})
-    fund_tx = owner.send_tx(tx)
+    # Fund via SDK wrapper
+    fund_tx = subnet.fund_emission_pool(fund_amount)
     ok(f"Funded emission pool with {fund_amount} MDT (TX: {fund_tx})")
 
     # Step 11b: Mine enough blocks to exceed tempo (360 blocks)
@@ -562,22 +568,202 @@ def do_display_metagraph(clients, netuid):
 
     print(f"\n  📊 Subnet {netuid} Metagraph")
     print(f"  {'─'*50}")
-    print(f"  {'UID':<5} {'Type':<12} {'Hotkey':<16} {'Stake (MDT)':<14} {'Rank':<12} {'Emission':<12} {'Active'}")
+    print(
+        f"  {'UID':<5} {'Type':<12} {'Hotkey':<16} {'Stake (MDT)':<14} {'Rank':<12} {'Emission':<12} {'Active'}"
+    )
     print(f"  {'─'*50}")
 
     for node in meta.nodes:
         node_type = "VALIDATOR" if node.is_validator else "MINER"
-        print(f"  {node.uid:<5} {node_type:<12} {node.hotkey[:14]}.. {node.total_stake_ether:<14.4f} {node.rank_float:<12.6f} {node.emission_ether:<12.6f} {'Yes' if node.active else 'No'}")
+        print(
+            f"  {node.uid:<5} {node_type:<12} {node.hotkey[:14]}.. {node.total_stake_ether:<14.4f} {node.rank_float:<12.6f} {node.emission_ether:<12.6f} {'Yes' if node.active else 'No'}"
+        )
 
     print(f"  {'─'*50}")
-    total = Web3.from_wei(meta.total_stake, 'ether')
-    print(f"  Total Stake: {total} MDT | Miners: {len(meta.miners)} | Validators: {len(meta.validators)}")
+    total = Web3.from_wei(meta.total_stake, "ether")
+    print(
+        f"  Total Stake: {total} MDT | Miners: {len(meta.miners)} | Validators: {len(meta.validators)}"
+    )
 
     # Token balances
     print(f"\n  💰 Final Token Balances:")
     for role in ["owner", "validator", "miner"]:
         bal = clients[role].token.balance_of_ether(clients[role].address)
         print(f"    {role.capitalize()}: {bal:.4f} MDT")
+
+
+# ════════════════════════════════════════════════════════
+# Step 14: Federated Learning (GradientAggregator)
+# ════════════════════════════════════════════════════════
+def do_federated_learning(clients, w3):
+    header("STEP 14 — Federated Learning Cycle (GradientAggregator)")
+
+    owner = clients["owner"]
+    miner = clients["miner"]
+    token = owner.token
+    training = owner.training
+
+    # 14a: Approve MDT + create training job
+    step("14a", "Owner creating federated learning job (3 rounds)...")
+    model_hash = Web3.keccak(text="fedavg-resnet50-polkadot-v1")
+    reward_amount = 500  # 500 MDT reward pool
+    reward_wei = Web3.to_wei(reward_amount, "ether")
+
+    # Approve GradientAggregator to spend MDT
+    aggregator_addr = training._contract.address
+    token.approve(aggregator_addr, reward_wei)
+    ok(f"Approved {reward_amount} MDT for GradientAggregator")
+
+    tx = training.create_job(
+        model_hash=model_hash,
+        total_rounds=3,
+        reward_ether=reward_amount,
+        max_participants=10,
+        round_deadline=7200,
+    )
+    ok(f"Training job created! TX: {tx}")
+
+    job_id = training.next_job_id() - 1
+    job = training.get_job_details(job_id)
+    info(f"  Job ID: {job_id}")
+    info(f"  Rounds: {job.total_rounds}, Reward: {job.reward_pool_ether:.0f} MDT")
+    info(f"  Status: {'ACTIVE' if job.is_active else 'INACTIVE'}")
+
+    # 14b: Miner submits gradients for each round
+    miner_training = miner.training
+    for round_num in range(1, 4):
+        step(f"14b.{round_num}", f"Miner submitting gradient for round {round_num}/3...")
+        grad_hash = Web3.keccak(text=f"gradient-round-{round_num}-miner-{miner.address[:8]}")
+        tx = miner_training.submit_gradient(
+            job_id=job_id,
+            gradient_hash=grad_hash,
+            data_size=1000 * round_num,
+        )
+        ok(f"Gradient submitted! TX: {tx}")
+
+        # 14c: Owner finalizes round
+        step(f"14c.{round_num}", f"Owner finalizing round {round_num}...")
+        agg_hash = Web3.keccak(text=f"aggregated-model-round-{round_num}")
+        tx = training.finalize_round(
+            job_id=job_id,
+            aggregated_hash=agg_hash,
+            valid_participants=[miner.address],
+        )
+        ok(f"Round {round_num} finalized! TX: {tx}")
+
+    # 14d: Verify job completion
+    job = training.get_job_details(job_id)
+    ok(f"Job status: {'COMPLETED' if job.is_completed else 'ACTIVE'}")
+    info(f"  Progress: round {job.current_round}/{job.total_rounds}")
+
+    # 14e: Miner claims reward
+    step("14e", "Miner claiming federated learning reward...")
+    miner_balance_before = token.balance_of_ether(miner.address)
+    tx = miner_training.claim_reward(job_id)
+    ok(f"Reward claimed! TX: {tx}")
+    miner_balance_after = token.balance_of_ether(miner.address)
+    reward_earned = miner_balance_after - miner_balance_before
+    info(f"  Reward received: {reward_earned:.2f} MDT")
+
+    # 14f: Verify participation
+    rounds_participated = training.get_participant_rounds(job_id, miner.address)
+    ok(f"Miner participated in {rounds_participated} validated rounds")
+    info("Federated learning cycle complete — FedAvg with on-chain coordination!")
+
+    return job_id
+
+
+# ════════════════════════════════════════════════════════
+# Step 15: Training Escrow (TrainingEscrow)
+# ════════════════════════════════════════════════════════
+def do_training_escrow(clients, w3):
+    header("STEP 15 — Training Escrow Cycle (Stake-Gated Training)")
+
+    owner = clients["owner"]
+    miner = clients["miner"]
+    token = owner.token
+    escrow = owner.escrow
+
+    # 15a: Create a training task with escrowed rewards
+    step("15a", "Owner creating escrow training task...")
+    model_hash = Web3.keccak(text="finetune-llm-polkadot-v1")
+    reward_amount = 200  # 200 MDT reward
+    reward_wei = Web3.to_wei(reward_amount, "ether")
+    min_stake = 10  # 10 MDT minimum stake
+
+    # Approve TrainingEscrow to spend MDT
+    escrow_addr = escrow._contract.address
+    token.approve(escrow_addr, reward_wei)
+    ok(f"Approved {reward_amount} MDT for TrainingEscrow")
+
+    tx = escrow.create_task(
+        model_hash=model_hash,
+        reward_ether=reward_amount,
+        min_stake_ether=min_stake,
+        max_trainers=5,
+        duration_seconds=86400,
+    )
+    ok(f"Training task created! TX: {tx}")
+
+    task_id = escrow.next_task_id() - 1
+    task = escrow.get_task_details(task_id)
+    info(f"  Task ID: {task_id}")
+    info(f"  Reward: {task.reward_ether:.0f} MDT, Min Stake: {task.min_stake_ether:.0f} MDT")
+    info(f"  Status: {'OPEN' if task.is_open else task.status.name}")
+
+    # 15b: Miner joins task by staking MDT
+    step("15b", "Miner staking MDT to join training task...")
+    miner_escrow = miner.escrow
+    miner_token = miner.token
+    stake_amount = min_stake
+
+    # Approve TrainingEscrow to take miner's stake
+    miner_token.approve(escrow_addr, Web3.to_wei(stake_amount, "ether"))
+    tx = miner_escrow.join_task(task_id, stake_ether=stake_amount)
+    ok(f"Miner joined task! Staked {stake_amount} MDT (TX: {tx})")
+
+    trainers = escrow.get_task_trainers(task_id)
+    info(f"  Active trainers: {len(trainers)}")
+
+    # 15c: Miner submits training result
+    step("15c", "Miner submitting training result...")
+    result_hash = Web3.keccak(text=f"training-result-{miner.address[:8]}-task-{task_id}")
+    tx = miner_escrow.submit_result(task_id, result_hash)
+    ok(f"Result submitted! TX: {tx}")
+
+    trainer_info = escrow.get_trainer_info(task_id, miner.address)
+    info(f"  Submitted: {trainer_info.submitted}")
+
+    # 15d: Owner validates the submission
+    step("15d", "Owner validating miner's submission...")
+    tx = escrow.validate_trainer(task_id, miner.address, is_valid=True)
+    ok(f"Trainer validated as VALID! TX: {tx}")
+
+    trainer_info = escrow.get_trainer_info(task_id, miner.address)
+    info(f"  Validated: {trainer_info.validated}, Slashed: {trainer_info.slashed}")
+
+    # 15e: Owner completes the task
+    step("15e", "Owner completing training task...")
+    tx = escrow.complete_task(task_id)
+    ok(f"Task completed! TX: {tx}")
+
+    task = escrow.get_task_details(task_id)
+    ok(f"Task status: {'COMPLETED' if task.is_completed else task.status.name}")
+
+    # 15f: Miner claims reward + stake back
+    step("15f", "Miner claiming reward + stake return...")
+    miner_balance_before = token.balance_of_ether(miner.address)
+    tx = miner_escrow.claim_reward(task_id)
+    ok(f"Reward claimed! TX: {tx}")
+    miner_balance_after = token.balance_of_ether(miner.address)
+    total_received = miner_balance_after - miner_balance_before
+    info(f"  Total received: {total_received:.2f} MDT (reward + stake return)")
+
+    slash_rate = escrow.slash_rate_pct()
+    info(f"  Slash rate: {slash_rate:.0f}% (applied to invalid submissions)")
+    info("Training escrow cycle complete — stake-gated, slashable training!")
+
+    return task_id
 
 
 # ════════════════════════════════════════════════════════
@@ -607,20 +793,27 @@ def main():
     do_claim(clients, netuid, miner_uid, validator_uid)
     do_display_metagraph(clients, netuid)
 
+    # Phase 4: Federated Learning (GradientAggregator)
+    do_federated_learning(clients, w3)
+
+    # Phase 5: Training Escrow (TrainingEscrow)
+    do_training_escrow(clients, w3)
+
     header("WORKFLOW COMPLETE 🎉")
-    print("""
+    print(
+        """
   Summary of operations performed:
   ─────────────────────────────────────────────
   Phase 1 — Setup:
   ✅ 1.  Connected to local Hardhat node
   ✅ 2.  Generated 3 wallets (deployer, validator, miner)
-  ✅ 3.  Loaded 6 deployed contracts
+  ✅ 3.  Loaded 8 deployed contracts
   ✅ 4.  Distributed MDT tokens (5000 → validator, 1000 → miner)
   ✅ 5.  Created/verified subnet (netuid=1)
   ✅ 6.  Registered VALIDATOR + MINER on subnet
 
   Phase 2 — Multi-Domain AI Cycle:
-  ✅ 7.  Setup zkML (trusted 3 domain models: NLP, Finance, Code)
+  ✅ 7.  Setup zkML (3 domain models + registered fulfiller)
   ✅ 8.  Validator created 3 tasks across 3 AI domains
   ✅ 9.  Miner processed all domains + generated zkML proofs
   ✅ 10. Validator evaluated quality → set weights
@@ -629,21 +822,38 @@ def main():
   ✅ 11. Ran epoch (Yuma Consensus emission distribution)
   ✅ 12. Checked/claimed emission rewards
   ✅ 13. Displayed final metagraph
+
+  Phase 4 — Federated Learning (GradientAggregator):
+  ✅ 14. Created training job → submitted gradients → finalized
+        3 rounds → claimed proportional rewards
+
+  Phase 5 — Training Escrow (TrainingEscrow):
+  ✅ 15. Created escrow task → miner staked & joined → submitted
+        result → validated → completed → claimed reward + stake
   ─────────────────────────────────────────────
 
   🔑 KEY INSIGHT: ModernTensor is a MULTI-DOMAIN protocol.
   ANY AI vertical can run as a subnet:
     NLP • Vision • Finance • Health • Code Review • Custom
 
+  ALL 8 CONTRACTS INTEGRATED:
+    MDTToken ─── MDTVesting ─── MDTStaking
+    SubnetRegistry ─── ZkMLVerifier ─── AIOracle
+    GradientAggregator ─── TrainingEscrow
+
+  Full lifecycle: Token → Subnet → Oracle → zkML →
+    Weights → Emission → FedAvg → Escrow
+
   Weights are NOT set manually. Miners earn weights
   through VERIFIED work across ANY domain:
     Oracle (task) → zkML (proof) → Weights → Emission
 
   This is a FULL Bittensor-equivalent multi-domain lifecycle
+  with federated learning and stake-gated training escrow.
   running on Polkadot Hub's EVM (pallet-revive).
-""")
+"""
+    )
 
 
 if __name__ == "__main__":
     main()
-

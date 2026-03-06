@@ -274,6 +274,8 @@ contract TrainingEscrow is Ownable, ReentrancyGuard {
                 task.status == TaskStatus.Open,
             "Task already finalized"
         );
+        // Prevent self-validation: task creator cannot validate their own submission
+        require(trainer != task.creator, "Creator cannot self-validate");
 
         TrainerInfo storage info = trainers[taskId][trainer];
         require(info.stakeAmount > 0, "Not a participant");
@@ -383,11 +385,13 @@ contract TrainingEscrow is Ownable, ReentrancyGuard {
         }
 
         // Refund reward to creator
-        if (task.rewardAmount > 0) {
-            token.safeTransfer(task.creator, task.rewardAmount);
+        uint256 refundAmount = task.rewardAmount;
+        task.rewardAmount = 0; // Zero out to prevent re-read issues
+        if (refundAmount > 0) {
+            token.safeTransfer(task.creator, refundAmount);
         }
 
-        emit TaskCancelled(taskId, task.rewardAmount);
+        emit TaskCancelled(taskId, refundAmount);
     }
 
     // ──────────────────────────────────────

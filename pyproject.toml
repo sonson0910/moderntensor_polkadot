@@ -66,6 +66,10 @@ dependencies = [
   # Dependency injection
   "dependency-injector>=4.45.0",
 
+  # Web3 / Polkadot EVM
+  "web3>=6.0.0",
+  "eth-account>=0.11.0",
+
   # Misc
   "typing_extensions>=4.12.0",
   "annotated-types>=0.7.0",

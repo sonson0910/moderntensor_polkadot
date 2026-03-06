@@ -14,8 +14,13 @@ from typing import Optional
 from web3 import Web3
 
 from sdk.cli.ui import (
-    print_error, print_success, print_info, print_warning,
-    console, create_table, print_panel, spinner
+    print_error,
+    print_success,
+    print_info,
+    print_warning,
+    console,
+    create_table,
+    spinner,
 )
 from sdk.cli.config import get_network_config
 
@@ -23,6 +28,7 @@ from sdk.cli.config import get_network_config
 def _get_client(network: str, key: Optional[str] = None):
     """Create a PolkadotClient for the given network."""
     from sdk.polkadot.client import PolkadotClient
+
     private_key = key or os.environ.get("PRIVATE_KEY")
     if not private_key:
         print_error("No private key. Use --key or set PRIVATE_KEY env var.")
@@ -58,10 +64,13 @@ def zkml_status(network: str, key: Optional[str]):
 
         dev_mode = z.dev_mode_enabled()
 
-        table = create_table("ZkML Verifier Status", [
-            ("Metric", "cyan"),
-            ("Value", "green"),
-        ])
+        table = create_table(
+            "ZkML Verifier Status",
+            [
+                ("Metric", "cyan"),
+                ("Value", "green"),
+            ],
+        )
         table.add_row("Dev Mode", "✅ Enabled" if dev_mode else "❌ Disabled")
         table.add_row("Contract", str(client._addresses.get("ZkMLVerifier", "N/A")))
         table.add_row("Proof Types", "STARK (0), Groth16 (1), Dev (2)")
@@ -77,10 +86,10 @@ def zkml_status(network: str, key: Optional[str]):
 @click.option("--image-id", required=True, help="Image ID (32-byte hex or model name)")
 @click.option("--journal", required=True, help="Public journal output")
 @click.option("--seal", required=True, help="Proof seal data (hex)")
-@click.option("--proof-type", default=2, type=int,
-              help="Proof type: 0=STARK, 1=Groth16, 2=Dev")
-def zkml_verify(network: str, key: Optional[str], image_id: str,
-                journal: str, seal: str, proof_type: int):
+@click.option("--proof-type", default=2, type=int, help="Proof type: 0=STARK, 1=Groth16, 2=Dev")
+def zkml_verify(
+    network: str, key: Optional[str], image_id: str, journal: str, seal: str, proof_type: int
+):
     """Verify a zkML proof with explicit parameters."""
     try:
         client = _get_client(network, key)
@@ -143,8 +152,9 @@ def zkml_trust_image(network: str, key: Optional[str], image_name: str):
 @click.option("--network", default="local", help="Network name")
 @click.option("--key", default=None, help="Private key")
 @click.option("--model", default="moderntensor-ai-v1", help="Model name for image ID")
-@click.option("--result", "result_data", default="inference:cat:0.97",
-              help="Simulated inference result")
+@click.option(
+    "--result", "result_data", default="inference:cat:0.97", help="Simulated inference result"
+)
 def zkml_dev_proof(network: str, key: Optional[str], model: str, result_data: str):
     """Create and verify a dev-mode proof (for testing)."""
     try:

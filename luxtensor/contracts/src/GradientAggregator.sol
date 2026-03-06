@@ -149,7 +149,7 @@ contract GradientAggregator is Ownable, ReentrancyGuard {
         uint256 rewardAmount,
         uint256 maxParticipants,
         uint256 roundDeadline
-    ) external returns (uint256 jobId) {
+    ) external nonReentrant returns (uint256 jobId) {
         require(totalRounds > 0, "Rounds must be > 0");
         require(rewardAmount > 0, "Reward must be > 0");
         require(maxParticipants > 0, "Max participants must be > 0");
@@ -198,6 +198,14 @@ contract GradientAggregator is Ownable, ReentrancyGuard {
     ) external {
         TrainingJob storage job = jobs[jobId];
         require(job.status == JobStatus.Active, "Job not active");
+        // Enforce round deadline
+        if (job.roundDeadline > 0) {
+            require(
+                block.timestamp <=
+                    job.createdAt + (job.currentRound * job.roundDeadline),
+                "Round deadline expired"
+            );
+        }
         require(dataSize > 0, "Data size must be > 0");
         require(gradientHash != bytes32(0), "Invalid gradient hash");
 

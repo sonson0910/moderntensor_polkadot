@@ -45,7 +45,8 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         uint256 lastEpochBlock; // Last epoch block
         uint256 minStake; // Minimum stake to register (wei)
         uint256 immunityPeriod; // Blocks before node can be deregistered
-        uint256 nodeCount; // Current neuron count
+        uint256 nodeCount; // Current active neuron count
+        uint256 nextUid; // Monotonically increasing UID counter (never decremented)
         bool active;
         uint256 createdAt;
     }
@@ -199,6 +200,24 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         string reason
     );
     event TrustUpdated(uint256 indexed netuid, uint16 uid, uint256 newTrust);
+    event ValidatorScored(
+        uint256 indexed netuid,
+        uint16 indexed uid,
+        uint256 trust,
+        uint256 emission,
+        uint256 alignment
+    );
+    event EmissionShareUpdated(
+        uint256 indexed netuid,
+        uint256 oldShare,
+        uint256 newShare
+    );
+    event DelegatedStakeWarning(
+        uint256 indexed netuid,
+        uint16 uid,
+        address indexed coldkey,
+        uint256 delegatedStake
+    );
 
     // ═══════════════════════════════════════════════════════
     // Constructor
@@ -280,6 +299,7 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             minStake: minStake,
             immunityPeriod: 7200, // ~24h at 12s blocks
             nodeCount: 0,
+            nextUid: 0,
             active: true,
             createdAt: block.timestamp
         });
@@ -312,6 +332,27 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         sn.immunityPeriod = immunityPeriod;
 
         emit SubnetUpdated(netuid, sn.name);
+    }
+
+    /**
+     * @notice Update emission share for a subnet (owner or admin only)
+     * @param netuid Target subnet
+     * @param newShare New emission share in basis points (e.g. 1000 = 10%)
+     */
+    function updateEmissionShare(uint256 netuid, uint256 newShare) external {
+        Subnet storage sn = subnets[netuid];
+        require(sn.active, "Subnet not active");
+        require(
+            msg.sender == sn.owner || msg.sender == owner(),
+            "Not authorized"
+        );
+        require(newShare > 0 && newShare <= 10000, "Invalid share");
+
+        uint256 oldShare = sn.emissionShare;
+        totalEmissionShares = totalEmissionShares - oldShare + newShare;
+        sn.emissionShare = newShare;
+
+        emit EmissionShareUpdated(netuid, oldShare, newShare);
     }
 
     // ═══════════════════════════════════════════════════════
@@ -355,7 +396,9 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             token.safeTransferFrom(msg.sender, address(this), stakeAmount);
         }
 
-        uid = uint16(sn.nodeCount);
+        // [SECURITY] Use monotonic nextUid counter — never reuse UIDs
+        uid = uint16(sn.nextUid);
+        sn.nextUid++;
         nodes[netuid][uid] = Node({
             hotkey: hotkey,
             coldkey: msg.sender,
@@ -402,6 +445,16 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         // Decrement node count
         subnets[netuid].nodeCount--;
 
+        // Warn if delegated stake exists (delegators must undelegate first)
+        if (node.delegatedStake > 0) {
+            emit DelegatedStakeWarning(
+                netuid,
+                uid,
+                node.coldkey,
+                node.delegatedStake
+            );
+        }
+
         // Return stake
         uint256 totalStake = node.stake + node.emission;
         node.stake = 0;
@@ -409,6 +462,8 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         if (totalStake > 0) {
             token.safeTransfer(node.coldkey, totalStake);
         }
+
+        emit NodeDeregistered(netuid, uid, node.hotkey);
     }
 
     // ═══════════════════════════════════════════════════════
@@ -483,10 +538,15 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
 
         commit.revealed = true;
 
-        // Verify all target UIDs are valid active nodes
+        // Verify all target UIDs are valid active MINER nodes
+        // [SECURITY] Validators can only assign weights to miners, not other validators
         for (uint256 i = 0; i < uids.length; i++) {
-            require(uids[i] < subnets[netuid].nodeCount, "Invalid UID");
+            require(uids[i] < subnets[netuid].nextUid, "Invalid UID");
             require(nodes[netuid][uids[i]].active, "Target not active");
+            require(
+                nodes[netuid][uids[i]].nodeType == NodeType.MINER,
+                "Can only weight miners"
+            );
         }
 
         // Store weights (replace existing)
@@ -506,27 +566,33 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
      * @notice Legacy setWeights (without commit-reveal).
      * @dev DEPRECATED: Use commitWeights()+revealWeights() instead.
      *      Restricted to contract owner only for emergency/migration use.
-     *      Normal validators MUST use commit-reveal flow.
+     *      Owner can set weights for ANY validator UID (admin override).
+     * @param netuid Target subnet
+     * @param validatorUid Validator UID to set weights for
+     * @param uids Array of miner UIDs to score
+     * @param weights Array of weights (uint16, will be normalized)
      */
     function setWeights(
         uint256 netuid,
+        uint16 validatorUid,
         uint16[] calldata uids,
         uint16[] calldata weights
     ) external onlyOwner {
         require(uids.length == weights.length, "Length mismatch");
         require(uids.length > 0, "Empty weights");
 
-        require(isRegistered[netuid][msg.sender], "Not registered");
-        uint16 validatorUid = hotkeyToUid[netuid][msg.sender];
-        require(
-            nodes[netuid][validatorUid].nodeType == NodeType.VALIDATOR,
-            "Not a validator"
-        );
-        require(nodes[netuid][validatorUid].active, "Not active");
+        // Verify target is a valid active validator
+        Node storage validator = nodes[netuid][validatorUid];
+        require(validator.active, "Validator not active");
+        require(validator.nodeType == NodeType.VALIDATOR, "Not a validator");
 
         for (uint256 i = 0; i < uids.length; i++) {
-            require(uids[i] < subnets[netuid].nodeCount, "Invalid UID");
+            require(uids[i] < subnets[netuid].nextUid, "Invalid UID");
             require(nodes[netuid][uids[i]].active, "Target not active");
+            require(
+                nodes[netuid][uids[i]].nodeType == NodeType.MINER,
+                "Can only weight miners"
+            );
         }
 
         delete _weights[netuid][validatorUid];
@@ -536,7 +602,7 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             );
         }
 
-        nodes[netuid][validatorUid].lastUpdate = block.number;
+        validator.lastUpdate = block.number;
         emit WeightsSet(netuid, validatorUid, uids.length);
     }
 
@@ -586,6 +652,13 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             blocksPassed *
             sn.emissionShare) / totalEmissionShares;
 
+        // [SECURITY] Cap emission to actual contract token balance
+        // Prevents accruing unbacked emission IOUs
+        uint256 contractBalance = token.balanceOf(address(this));
+        if (totalEmission > contractBalance) {
+            totalEmission = contractBalance;
+        }
+
         if (totalEmission == 0) {
             sn.lastEpochBlock = block.number;
             return;
@@ -595,13 +668,13 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         // Step 1: Aggregate QUADRATIC stake-weighted scores
         //         with TRUST multiplier
         // ───────────────────────────────────────────────────
-        uint256[] memory scores = new uint256[](sn.nodeCount);
+        uint256[] memory scores = new uint256[](sn.nextUid);
         uint256 totalScore = 0;
 
         // Track per-validator weight sums for trust calculation later
-        uint256[] memory validatorContributions = new uint256[](sn.nodeCount);
+        uint256[] memory validatorContributions = new uint256[](sn.nextUid);
 
-        for (uint16 v = 0; v < sn.nodeCount; v++) {
+        for (uint16 v = 0; v < sn.nextUid; v++) {
             Node storage validator = nodes[netuid][v];
             if (!validator.active || validator.nodeType != NodeType.VALIDATOR)
                 continue;
@@ -647,7 +720,7 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         // ───────────────────────────────────────────────────
         uint256 minerShare = (totalEmission * 8200) / 10000; // 82%
         if (totalScore > 0) {
-            for (uint16 uid = 0; uid < sn.nodeCount; uid++) {
+            for (uint16 uid = 0; uid < sn.nextUid; uid++) {
                 if (scores[uid] > 0 && nodes[netuid][uid].active) {
                     uint256 nodeEmission = (minerShare * scores[uid]) /
                         totalScore;
@@ -659,34 +732,45 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         }
 
         // ───────────────────────────────────────────────────
-        // Step 3: Distribute 18% PROPORTIONAL to validator stake
-        //         (not equal split — fairer)
+        // Step 3: Distribute 18% to validators weighted by
+        //         STAKE × TRUST (not pure stake — rewards consensus alignment)
         // ───────────────────────────────────────────────────
         uint256 validatorShareTotal = (totalEmission * 1800) / 10000; // 18%
-        uint256 totalValidatorStake = 0;
+        uint256 totalEffectiveValidatorStake = 0;
 
-        // First pass: compute total validator stake
-        for (uint16 v = 0; v < sn.nodeCount; v++) {
-            if (
-                nodes[netuid][v].active &&
-                nodes[netuid][v].nodeType == NodeType.VALIDATOR
-            ) {
-                totalValidatorStake +=
-                    nodes[netuid][v].stake +
-                    nodes[netuid][v].delegatedStake;
+        // First pass: compute total effective stake (stake × trust multiplier)
+        for (uint16 v = 0; v < sn.nextUid; v++) {
+            Node storage validator = nodes[netuid][v];
+            if (validator.active && validator.nodeType == NodeType.VALIDATOR) {
+                uint256 vStake = validator.stake + validator.delegatedStake;
+                // [CONSENSUS SCORING] Trust-weighted effective stake
+                // Low-trust validators earn proportionally less emission
+                uint256 trustFactor = TRUST_MULTIPLIER_BASE +
+                    (validator.trust *
+                        (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) /
+                    1e18;
+                uint256 effectiveStake = (vStake * trustFactor) /
+                    TRUST_MULTIPLIER_BASE;
+                totalEffectiveValidatorStake += effectiveStake;
             }
         }
 
-        // Second pass: distribute proportionally
-        if (totalValidatorStake > 0) {
-            for (uint16 v = 0; v < sn.nodeCount; v++) {
+        // Second pass: distribute proportionally to effective stake
+        if (totalEffectiveValidatorStake > 0) {
+            for (uint16 v = 0; v < sn.nextUid; v++) {
                 Node storage validator = nodes[netuid][v];
                 if (
                     validator.active && validator.nodeType == NodeType.VALIDATOR
                 ) {
                     uint256 vStake = validator.stake + validator.delegatedStake;
-                    uint256 perValidator = (validatorShareTotal * vStake) /
-                        totalValidatorStake;
+                    uint256 trustFactor = TRUST_MULTIPLIER_BASE +
+                        (validator.trust *
+                            (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) /
+                        1e18;
+                    uint256 effectiveStake = (vStake * trustFactor) /
+                        TRUST_MULTIPLIER_BASE;
+                    uint256 perValidator = (validatorShareTotal *
+                        effectiveStake) / totalEffectiveValidatorStake;
                     validator.emission += perValidator;
                 }
             }
@@ -697,7 +781,7 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         //         Trust = how well validator's weights align with consensus
         // ───────────────────────────────────────────────────
         if (totalScore > 0) {
-            for (uint16 v = 0; v < sn.nodeCount; v++) {
+            for (uint16 v = 0; v < sn.nextUid; v++) {
                 Node storage validator = nodes[netuid][v];
                 if (
                     !validator.active ||
@@ -709,6 +793,13 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
                     // No weights set → decrease trust
                     validator.trust = (validator.trust * 95) / 100; // -5%
                     emit TrustUpdated(netuid, v, validator.trust);
+                    emit ValidatorScored(
+                        netuid,
+                        v,
+                        validator.trust,
+                        validator.emission,
+                        0
+                    );
                     continue;
                 }
 
@@ -750,6 +841,13 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
                     100;
 
                 emit TrustUpdated(netuid, v, validator.trust);
+                emit ValidatorScored(
+                    netuid,
+                    v,
+                    validator.trust,
+                    validator.emission,
+                    newAlignment
+                );
             }
         }
 
@@ -914,7 +1012,8 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
     // ═══════════════════════════════════════════════════════
 
     /**
-     * @notice Get full metagraph for a subnet
+     * @notice Get full metagraph for a subnet (active nodes only)
+     * @dev Iterates nextUid to account for deregistered slots
      */
     function getMetagraph(
         uint256 netuid
@@ -932,7 +1031,9 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             bool[] memory activeFlags
         )
     {
-        uint256 count = subnets[netuid].nodeCount;
+        Subnet storage sn = subnets[netuid];
+        uint256 count = sn.nodeCount; // active node count
+
         hotkeys = new address[](count);
         coldkeys = new address[](count);
         stakes = new uint256[](count);
@@ -942,16 +1043,19 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         nodeTypes = new uint8[](count);
         activeFlags = new bool[](count);
 
-        for (uint16 i = 0; i < count; i++) {
+        uint256 idx = 0;
+        for (uint16 i = 0; i < sn.nextUid && idx < count; i++) {
             Node storage n = nodes[netuid][i];
-            hotkeys[i] = n.hotkey;
-            coldkeys[i] = n.coldkey;
-            stakes[i] = n.stake + n.delegatedStake;
-            ranks[i] = n.rank;
-            incentives[i] = n.incentive;
-            emissions[i] = n.emission;
-            nodeTypes[i] = uint8(n.nodeType);
-            activeFlags[i] = n.active;
+            if (!n.active) continue;
+            hotkeys[idx] = n.hotkey;
+            coldkeys[idx] = n.coldkey;
+            stakes[idx] = n.stake + n.delegatedStake;
+            ranks[idx] = n.rank;
+            incentives[idx] = n.incentive;
+            emissions[idx] = n.emission;
+            nodeTypes[idx] = uint8(n.nodeType);
+            activeFlags[idx] = true;
+            idx++;
         }
     }
 
@@ -1048,6 +1152,61 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
         uint16 uid
     ) external view returns (uint256) {
         return nodes[netuid][uid].trust;
+    }
+
+    /**
+     * @notice Get full validator consensus score breakdown.
+     * @dev Returns all metrics that determine a validator's emission share.
+     *
+     * Consensus Scoring Formula:
+     *   effectivePower = sqrt(stake) × trustMultiplier
+     *   trustMultiplier = 1.0 + (trust × 0.5)   // range [1.0, 1.5]
+     *   emission_share = effectivePower / sum(all_validators_effectivePower)
+     *
+     * Trust Score:
+     *   - Measures alignment between validator's weights and consensus.
+     *   - Updated each epoch via EMA: 70% old + 30% alignment.
+     *   - Range: [0, 1e18] where 1e18 = perfect alignment.
+     *   - Validators with no weights lose 5% trust per epoch.
+     *   - New validators start at 50% trust (0.5 × 1e18).
+     */
+    function getValidatorScore(
+        uint256 netuid,
+        uint16 uid
+    )
+        external
+        view
+        returns (
+            uint256 trust, // 0-1e18 consensus alignment score
+            uint256 rank, // 0-1e18 rank from last epoch
+            uint256 stake, // Direct stake (wei)
+            uint256 delegatedStake, // Delegated stake (wei)
+            uint256 effectivePower, // sqrt(totalStake) × trustMultiplier
+            uint256 emission, // Pending emission to claim
+            uint256 incentive, // Accumulated incentive
+            bool active
+        )
+    {
+        Node storage n = nodes[netuid][uid];
+        require(n.nodeType == NodeType.VALIDATOR, "Not a validator");
+
+        uint256 totalStake = n.stake + n.delegatedStake;
+        uint256 sqrtStake = sqrt(totalStake);
+        uint256 trustFactor = TRUST_MULTIPLIER_BASE +
+            (n.trust * (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) /
+            1e18;
+        uint256 power = (sqrtStake * trustFactor) / TRUST_MULTIPLIER_BASE;
+
+        return (
+            n.trust,
+            n.rank,
+            n.stake,
+            n.delegatedStake,
+            power,
+            n.emission,
+            n.incentive,
+            n.active
+        );
     }
 
     // ═══════════════════════════════════════════════════════

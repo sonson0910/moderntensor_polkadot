@@ -206,13 +206,17 @@ class PolkadotClient:
             self._escrow = EscrowClient(self)
         return self._escrow
 
-    def orchestrator(self, netuid: int = 1) -> AISubnetOrchestrator:
+    def orchestrator(self, netuid: int = 1, validator_uid: int = 0) -> AISubnetOrchestrator:
         """Create an AI Subnet Orchestrator for the given subnet.
 
         The orchestrator ties Oracle + ZkML + Subnet into one
         coherent workflow: tasks → inference → proofs → weights.
+
+        Args:
+            netuid: Target subnet ID
+            validator_uid: Validator UID for weight setting (admin fallback)
         """
-        return AISubnetOrchestrator(self, netuid=netuid)
+        return AISubnetOrchestrator(self, netuid=netuid, validator_uid=validator_uid)
 
     # ── Transaction Helpers ─────────────────────────────────
 

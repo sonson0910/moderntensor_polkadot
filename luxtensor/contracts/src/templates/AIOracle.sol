@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./ZkMLVerifier.sol";
 
 /**
- * @title AIOracle - Decentralized AI Inference Oracle for LuxTensor
+ * @title AIOracle - Decentralized AI Inference Oracle for ModernTensor
  * @notice Request AI computations and receive verified results on-chain
- * @dev Core component for AI-powered dApps on LuxTensor
+ * @dev Core component for AI-powered dApps on ModernTensor
  *
  * Features:
  * - Request AI inference from network miners
@@ -167,7 +167,9 @@ contract AIOracle is Ownable, ReentrancyGuard {
 
         req.status = RequestStatus.Cancelled;
 
-        payable(msg.sender).transfer(req.reward);
+        // [SECURITY] Use call instead of transfer (avoids 2300 gas limit)
+        (bool success, ) = payable(msg.sender).call{value: req.reward}("");
+        require(success, "Refund failed");
 
         emit AIRequestCancelled(requestId);
     }
@@ -204,8 +206,12 @@ contract AIOracle is Ownable, ReentrancyGuard {
         require(result.length > 0, "Empty result");
         require(registeredFulfillers[msg.sender], "Not registered fulfiller");
 
-        // Verify zkML proof if verifier is set
-        if (zkmlVerifier != address(0) && proofHash != bytes32(0)) {
+        // [SECURITY] Verify zkML proof — MANDATORY when verifier is configured
+        if (zkmlVerifier != address(0)) {
+            require(
+                proofHash != bytes32(0),
+                "Proof required when verifier is set"
+            );
             // Call ZkMLVerifier to check proof validity
             (bool isValid, ) = IZkMLVerifier(zkmlVerifier).verifyProof(
                 req.modelHash, // imageId
@@ -226,7 +232,9 @@ contract AIOracle is Ownable, ReentrancyGuard {
         uint256 payout = req.reward - fee;
 
         accumulatedFees += fee;
-        payable(msg.sender).transfer(payout);
+        // [SECURITY] Use call instead of transfer (avoids 2300 gas limit)
+        (bool success, ) = payable(msg.sender).call{value: payout}("");
+        require(success, "Payout failed");
 
         emit AIRequestFulfilled(requestId, msg.sender, proofHash);
     }
@@ -242,8 +250,9 @@ contract AIOracle is Ownable, ReentrancyGuard {
 
         req.status = RequestStatus.Expired;
 
-        // Refund requester
-        payable(req.requester).transfer(req.reward);
+        // [SECURITY] Use call instead of transfer (avoids 2300 gas limit)
+        (bool success, ) = payable(req.requester).call{value: req.reward}("");
+        require(success, "Refund failed");
 
         emit AIRequestExpired(requestId);
     }
@@ -316,7 +325,9 @@ contract AIOracle is Ownable, ReentrancyGuard {
     function withdrawFees() external onlyOwner {
         uint256 amount = accumulatedFees;
         accumulatedFees = 0;
-        payable(owner()).transfer(amount);
+        // [SECURITY] Use call instead of transfer
+        (bool success, ) = payable(owner()).call{value: amount}("");
+        require(success, "Withdraw failed");
     }
 
     // ========== VIEW FUNCTIONS ==========

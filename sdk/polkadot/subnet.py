@@ -13,10 +13,13 @@ Enhanced Yuma Consensus with Security Hardening:
 
 from __future__ import annotations
 
+import logging
 import secrets
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import TYPE_CHECKING, Optional
+
+logger = logging.getLogger(__name__)
 
 from web3 import Web3
 
@@ -26,6 +29,7 @@ if TYPE_CHECKING:
 
 class NodeType(IntEnum):
     """Node type in subnet."""
+
     MINER = 0
     VALIDATOR = 1
 
@@ -33,6 +37,7 @@ class NodeType(IntEnum):
 @dataclass
 class SubnetInfo:
     """On-chain subnet metadata."""
+
     netuid: int
     name: str
     owner: str
@@ -50,6 +55,7 @@ class SubnetInfo:
 @dataclass
 class NodeInfo:
     """On-chain node (neuron) info — includes trust score."""
+
     uid: int
     hotkey: str
     coldkey: str
@@ -91,6 +97,7 @@ class NodeInfo:
 @dataclass
 class Metagraph:
     """Full metagraph snapshot for a subnet."""
+
     netuid: int
     nodes: list[NodeInfo]
 
@@ -165,6 +172,22 @@ class SubnetClient:
         tx = self._contract.functions.updateSubnet(
             netuid, max_nodes, min_stake_wei, tempo, immunity_period
         ).build_transaction({})
+        return self._client.send_tx(tx)
+
+    def update_emission_share(self, netuid: int, new_share_bps: int) -> str:
+        """
+        Update subnet emission share (subnet owner or admin only).
+
+        Args:
+            netuid: Target subnet
+            new_share_bps: New emission share in basis points (1-10000, e.g. 1000 = 10%)
+
+        Returns:
+            Transaction hash
+        """
+        tx = self._contract.functions.updateEmissionShare(netuid, new_share_bps).build_transaction(
+            {}
+        )
         return self._client.send_tx(tx)
 
     def get_subnet(self, netuid: int) -> SubnetInfo:
@@ -251,9 +274,7 @@ class SubnetClient:
 
     def deregister(self, netuid: int, uid: int) -> str:
         """Deregister a node and return stake."""
-        tx = self._contract.functions.deregisterNode(
-            netuid, uid
-        ).build_transaction({})
+        tx = self._contract.functions.deregisterNode(netuid, uid).build_transaction({})
         return self._client.send_tx(tx)
 
     def is_registered(self, netuid: int, hotkey: Optional[str] = None) -> bool:
@@ -296,19 +317,14 @@ class SubnetClient:
         if salt is None:
             salt = secrets.token_bytes(32)
 
-        # Compute hash: keccak256(abi.encodePacked(uids, weights, salt))
-        encoded = b""
-        for uid in uids:
-            encoded += uid.to_bytes(2, "big")
-        for w in weights:
-            encoded += w.to_bytes(2, "big")
-        encoded += salt
+        # Compute hash matching Solidity: keccak256(abi.encodePacked(uids, weights, salt))
+        # abi.encodePacked for uint16[] pads each element to 32 bytes
+        commit_hash = Web3.solidity_keccak(
+            ["uint16[]", "uint16[]", "bytes32"],
+            [uids, weights, salt],
+        )
 
-        commit_hash = Web3.keccak(encoded)
-
-        tx = self._contract.functions.commitWeights(
-            netuid, commit_hash
-        ).build_transaction({})
+        tx = self._contract.functions.commitWeights(netuid, commit_hash).build_transaction({})
         tx_hash = self._client.send_tx(tx)
 
         return tx_hash, salt
@@ -335,9 +351,9 @@ class SubnetClient:
         Returns:
             Transaction hash
         """
-        tx = self._contract.functions.revealWeights(
-            netuid, uids, weights, salt
-        ).build_transaction({})
+        tx = self._contract.functions.revealWeights(netuid, uids, weights, salt).build_transaction(
+            {}
+        )
         return self._client.send_tx(tx)
 
     def set_weights(
@@ -345,18 +361,19 @@ class SubnetClient:
         netuid: int,
         uids: list[int],
         weights: list[int],
+        validator_uid: int = None,
     ) -> str:
         """
-        Legacy setWeights (without commit-reveal).
+        Legacy setWeights (admin override, without commit-reveal).
 
-        For backward compatibility with subnets that don't require
-        commit-reveal. Prefer commit_weights + reveal_weights for
-        production use.
+        Owner can set weights directly (emergency/migration).
+        Prefer commit_weights + reveal_weights for production use.
 
         Args:
             netuid: Target subnet
             uids: List of miner UIDs to score
             weights: List of weights (uint16, 0-65535)
+            validator_uid: (ignored, kept for backward-compat)
 
         Returns:
             Transaction hash
@@ -364,18 +381,14 @@ class SubnetClient:
         Example:
             >>> client.subnet.set_weights(1, [0, 1, 2], [100, 200, 50])
         """
-        tx = self._contract.functions.setWeights(
-            netuid, uids, weights
-        ).build_transaction({})
+        # Contract signature: setWeights(uint256 netuid, uint16 validatorUid, uint16[] uids, uint16[] weights)
+        vid = validator_uid if validator_uid is not None else 0
+        tx = self._contract.functions.setWeights(netuid, vid, uids, weights).build_transaction({})
         return self._client.send_tx(tx)
 
-    def get_weights(
-        self, netuid: int, validator_uid: int
-    ) -> tuple[list[int], list[int]]:
+    def get_weights(self, netuid: int, validator_uid: int) -> tuple[list[int], list[int]]:
         """Get weights set by a validator."""
-        result = self._contract.functions.getWeights(
-            netuid, validator_uid
-        ).call()
+        result = self._contract.functions.getWeights(netuid, validator_uid).call()
         return list(result[0]), list(result[1])
 
     # ═══════════════════════════════════════════════════════
@@ -402,9 +415,7 @@ class SubnetClient:
 
     def claim_emission(self, netuid: int, uid: int) -> str:
         """Claim accumulated emission rewards."""
-        tx = self._contract.functions.claimEmission(
-            netuid, uid
-        ).build_transaction({})
+        tx = self._contract.functions.claimEmission(netuid, uid).build_transaction({})
         return self._client.send_tx(tx)
 
     # ═══════════════════════════════════════════════════════
@@ -451,18 +462,14 @@ class SubnetClient:
         Returns:
             Transaction hash
         """
-        tx = self._contract.functions.autoSlashInactive(
-            netuid, validator_uid
-        ).build_transaction({})
+        tx = self._contract.functions.autoSlashInactive(netuid, validator_uid).build_transaction({})
         return self._client.send_tx(tx)
 
     # ═══════════════════════════════════════════════════════
     # Delegation
     # ═══════════════════════════════════════════════════════
 
-    def delegate(
-        self, netuid: int, validator_uid: int, amount_ether: float
-    ) -> str:
+    def delegate(self, netuid: int, validator_uid: int, amount_ether: float) -> str:
         """
         Delegate stake to a validator.
 
@@ -475,14 +482,12 @@ class SubnetClient:
             Transaction hash
         """
         amount_wei = Web3.to_wei(amount_ether, "ether")
-        tx = self._contract.functions.delegate(
-            netuid, validator_uid, amount_wei
-        ).build_transaction({})
+        tx = self._contract.functions.delegate(netuid, validator_uid, amount_wei).build_transaction(
+            {}
+        )
         return self._client.send_tx(tx)
 
-    def undelegate(
-        self, netuid: int, validator_uid: int, amount_ether: float
-    ) -> str:
+    def undelegate(self, netuid: int, validator_uid: int, amount_ether: float) -> str:
         """Undelegate stake from a validator."""
         amount_wei = Web3.to_wei(amount_ether, "ether")
         tx = self._contract.functions.undelegate(
@@ -498,9 +503,28 @@ class SubnetClient:
     ) -> int:
         """Get delegation amount (wei)."""
         addr = Web3.to_checksum_address(delegator or self._client.address)
-        return self._contract.functions.getDelegation(
-            addr, netuid, validator_uid
-        ).call()
+        return self._contract.functions.getDelegation(addr, netuid, validator_uid).call()
+
+    # ═══════════════════════════════════════════════════════
+    # Emission Pool
+    # ═══════════════════════════════════════════════════════
+
+    def fund_emission_pool(self, amount_ether: float) -> str:
+        """
+        Fund the emission pool with MDT tokens.
+
+        Requires prior approve() of MDT tokens to SubnetRegistry.
+        The emission pool is used by runEpoch() to distribute rewards.
+
+        Args:
+            amount_ether: Amount of MDT to fund (human-readable)
+
+        Returns:
+            Transaction hash
+        """
+        amount_wei = Web3.to_wei(amount_ether, "ether")
+        tx = self._contract.functions.fundEmissionPool(amount_wei).build_transaction({})
+        return self._client.send_tx(tx)
 
     # ═══════════════════════════════════════════════════════
     # Trust Score Queries
@@ -518,6 +542,44 @@ class SubnetClient:
         """
         raw = self._contract.functions.getTrust(netuid, uid).call()
         return raw / 1e18 if raw > 0 else 0.0
+
+    def get_validator_score(self, netuid: int, uid: int) -> dict:
+        """
+        Get full validator consensus score breakdown.
+
+        Returns all metrics that determine a validator's emission share:
+        - trust: Consensus alignment score (0.0-1.0)
+        - rank: Rank from last epoch (0.0-1.0)
+        - stake: Direct stake in ether
+        - delegated_stake: Delegated stake in ether
+        - effective_power: sqrt(totalStake) × trustMultiplier
+        - emission: Pending emission in ether
+        - incentive: Accumulated incentive in ether
+        - active: Whether node is active
+
+        Args:
+            netuid: Target subnet
+            uid: Validator UID
+
+        Returns:
+            Dict with all validator consensus metrics
+
+        Example:
+            >>> score = client.subnet.get_validator_score(1, 0)
+            >>> print(f"Trust: {score['trust']:.2%}")
+            >>> print(f"Power: {score['effective_power']}")
+        """
+        result = self._contract.functions.getValidatorScore(netuid, uid).call()
+        return {
+            "trust": result[0] / 1e18 if result[0] > 0 else 0.0,
+            "rank": result[1] / 1e18 if result[1] > 0 else 0.0,
+            "stake": float(Web3.from_wei(result[2], "ether")),
+            "delegated_stake": float(Web3.from_wei(result[3], "ether")),
+            "effective_power": result[4],
+            "emission": float(Web3.from_wei(result[5], "ether")),
+            "incentive": float(Web3.from_wei(result[6], "ether")),
+            "active": result[7],
+        }
 
     # ═══════════════════════════════════════════════════════
     # Metagraph
@@ -541,19 +603,21 @@ class SubnetClient:
                 nodes.append(node_info)
             except Exception:
                 # Fallback: use metagraph data with total stake as own stake
-                nodes.append(NodeInfo(
-                    uid=i,
-                    hotkey=hotkeys[i],
-                    coldkey=coldkeys[i],
-                    node_type=NodeType(types[i]),
-                    stake=stakes[i],
-                    delegated_stake=0,
-                    rank=ranks[i],
-                    incentive=incentives[i],
-                    emission=emissions[i],
-                    trust=0,
-                    active=actives[i],
-                ))
+                nodes.append(
+                    NodeInfo(
+                        uid=i,
+                        hotkey=hotkeys[i],
+                        coldkey=coldkeys[i],
+                        node_type=NodeType(types[i]),
+                        stake=stakes[i],
+                        delegated_stake=0,
+                        rank=ranks[i],
+                        incentive=incentives[i],
+                        emission=emissions[i],
+                        trust=0,
+                        active=actives[i],
+                    )
+                )
 
         return Metagraph(netuid=netuid, nodes=nodes)
 
@@ -583,9 +647,7 @@ class SubnetClient:
     ) -> tuple[str, str]:
         """Approve MDT + register as miner."""
         stake_wei = Web3.to_wei(stake_ether, "ether")
-        approve_hash = self._client.token.approve(
-            self._contract.address, stake_wei
-        )
+        approve_hash = self._client.token.approve(self._contract.address, stake_wei)
         reg_hash = self.register_miner(netuid, hotkey, stake_ether)
         return approve_hash, reg_hash
 
@@ -594,9 +656,7 @@ class SubnetClient:
     ) -> tuple[str, str]:
         """Approve MDT + register as validator."""
         stake_wei = Web3.to_wei(stake_ether, "ether")
-        approve_hash = self._client.token.approve(
-            self._contract.address, stake_wei
-        )
+        approve_hash = self._client.token.approve(self._contract.address, stake_wei)
         reg_hash = self.register_validator(netuid, hotkey, stake_ether)
         return approve_hash, reg_hash
 
@@ -605,9 +665,7 @@ class SubnetClient:
     ) -> tuple[str, str]:
         """Approve MDT + delegate to validator."""
         amount_wei = Web3.to_wei(amount_ether, "ether")
-        approve_hash = self._client.token.approve(
-            self._contract.address, amount_wei
-        )
+        approve_hash = self._client.token.approve(self._contract.address, amount_wei)
         delegate_hash = self.delegate(netuid, validator_uid, amount_ether)
         return approve_hash, delegate_hash
 
@@ -624,16 +682,12 @@ class SubnetClient:
 
     def set_slash_percentage(self, basis_points: int) -> str:
         """Set default slash percentage (owner only, max 50%)."""
-        tx = self._contract.functions.setSlashPercentage(
-            basis_points
-        ).build_transaction({})
+        tx = self._contract.functions.setSlashPercentage(basis_points).build_transaction({})
         return self._client.send_tx(tx)
 
     def set_commit_reveal_window(self, blocks: int) -> str:
         """Set commit-reveal window in blocks (owner only)."""
-        tx = self._contract.functions.setCommitRevealWindow(
-            blocks
-        ).build_transaction({})
+        tx = self._contract.functions.setCommitRevealWindow(blocks).build_transaction({})
         return self._client.send_tx(tx)
 
     def get_emission_config(self) -> dict:

@@ -10,7 +10,7 @@ On-chain verification of zkML proofs:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from web3 import Web3
 

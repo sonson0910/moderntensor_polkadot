@@ -14,11 +14,15 @@ Commands:
 import click
 import os
 from typing import Optional
-from web3 import Web3
 
 from sdk.cli.ui import (
-    print_error, print_success, print_info, print_warning,
-    console, create_table, print_panel, spinner
+    print_error,
+    print_success,
+    print_info,
+    print_warning,
+    console,
+    create_table,
+    spinner,
 )
 from sdk.cli.config import get_network_config
 
@@ -26,6 +30,7 @@ from sdk.cli.config import get_network_config
 def _get_client(network: str, key: Optional[str] = None):
     """Create a PolkadotClient for the given network."""
     from sdk.polkadot.client import PolkadotClient
+
     private_key = key or os.environ.get("PRIVATE_KEY")
     if not private_key:
         print_error("No private key. Use --key or set PRIVATE_KEY env var.")
@@ -71,14 +76,17 @@ def ai_status(network: str, key: Optional[str], netuid: int):
         with spinner("Fetching subnet metagraph..."):
             mg = client.subnet.get_metagraph(netuid)
 
-        table = create_table(f"Subnet {netuid} — Metagraph", [
-            ("UID", "cyan"),
-            ("Role", "blue"),
-            ("Stake", "green"),
-            ("Rank", "yellow"),
-            ("Emission", "magenta"),
-            ("Active", "white"),
-        ])
+        table = create_table(
+            f"Subnet {netuid} — Metagraph",
+            [
+                ("UID", "cyan"),
+                ("Role", "blue"),
+                ("Stake", "green"),
+                ("Rank", "yellow"),
+                ("Emission", "magenta"),
+                ("Active", "white"),
+            ],
+        )
 
         for node in mg.nodes:
             role = "🔍 Validator" if node.node_type == 1 else "⛏️ Miner"
@@ -101,12 +109,16 @@ def ai_status(network: str, key: Optional[str], netuid: int):
 @click.option("--network", default="local", help="Network name")
 @click.option("--key", default=None, help="Private key")
 @click.option("--netuid", default=1, type=int, help="Subnet UID")
-@click.option("--model", required=True,
-              help="Model name (e.g. 'nlp-sentiment-v1', 'vision-classify-v1', 'code-review-v1')")
+@click.option(
+    "--model",
+    required=True,
+    help="Model name (e.g. 'nlp-sentiment-v1', 'vision-classify-v1', 'code-review-v1')",
+)
 @click.option("--input", "input_data", required=True, help="Input data for inference")
 @click.option("--payment", default=0.01, type=float, help="Payment in MDT")
-def ai_create_task(network: str, key: Optional[str], netuid: int,
-                   model: str, input_data: str, payment: float):
+def ai_create_task(
+    network: str, key: Optional[str], netuid: int, model: str, input_data: str, payment: float
+):
     """Create an AI inference task on-chain (any domain).
 
     Examples:
@@ -159,10 +171,13 @@ def ai_evaluate(network: str, key: Optional[str], netuid: int):
         for val in validators:
             uids, weights = client.subnet.get_weights(netuid, val.uid)
             if uids:
-                table = create_table(f"Weights by Validator UID={val.uid}", [
-                    ("Miner UID", "cyan"),
-                    ("Weight", "green"),
-                ])
+                table = create_table(
+                    f"Weights by Validator UID={val.uid}",
+                    [
+                        ("Miner UID", "cyan"),
+                        ("Weight", "green"),
+                    ],
+                )
                 for u, w in zip(uids, weights):
                     table.add_row(str(u), str(w))
                 console.print(table)

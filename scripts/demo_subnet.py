@@ -18,7 +18,6 @@ Prerequisites:
 
 import os
 import sys
-import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -131,7 +130,9 @@ def main():
     print(f"\n  📊 Metagraph: {len(meta.miners)} miners, {len(meta.validators)} validators")
     for n in meta.nodes:
         role = "VALIDATOR" if n.is_validator else "MINER"
-        print(f"     UID {n.uid}: {role} | stake={n.total_stake_ether} MDT | trust={n.trust_float:.2f}")
+        print(
+            f"     UID {n.uid}: {role} | stake={n.total_stake_ether} MDT | trust={n.trust_float:.2f}"
+        )
 
     # ── Approve models + register miner as fulfiller ──
     banner("APPROVE: Models + Fulfiller", "🔑")

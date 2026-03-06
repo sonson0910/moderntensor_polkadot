@@ -16,7 +16,6 @@ Run:  python tests/test_e2e_polkadot.py
 
 import os
 import sys
-import time
 import traceback
 
 # Add project root to path
@@ -28,7 +27,9 @@ from web3 import Web3
 # Config
 # ──────────────────────────────────────────────────────────────
 
-PRIVATE_KEY = os.environ.get("TESTNET_PRIVATE_KEY", "0x3230cd6d7ea8c1666bcec73a86a1a8d86ad23198bf29554bf11f61bed41452fb")
+PRIVATE_KEY = os.environ.get(
+    "TESTNET_PRIVATE_KEY", "0x3230cd6d7ea8c1666bcec73a86a1a8d86ad23198bf29554bf11f61bed41452fb"
+)
 DEPLOYMENT_PATH = "luxtensor/contracts/deployments-polkadot.json"
 NETWORK = "polkadot_testnet"
 
@@ -86,11 +87,14 @@ def main():
     )
 
     test("Client connected", lambda: client.is_connected)
-    test("Chain ID = 420420417", lambda: (
-        f"chain_id={client.chain_id}"
-        if client.chain_id == 420420417
-        else (_ for _ in ()).throw(AssertionError(f"Expected 420420417, got {client.chain_id}"))
-    ))
+    test(
+        "Chain ID = 420420417",
+        lambda: (
+            f"chain_id={client.chain_id}"
+            if client.chain_id == 420420417
+            else (_ for _ in ()).throw(AssertionError(f"Expected 420420417, got {client.chain_id}"))
+        ),
+    )
     test("Block number > 0", lambda: f"block={client.block_number}")
     test("Account loaded", lambda: f"address={client.address}")
 
@@ -128,7 +132,10 @@ def main():
     test("Total supply", lambda: f"{Web3.from_wei(token.total_supply(), 'ether')} MDT")
     test("Deployer MDT balance", lambda: f"{token.balance_of_ether()} MDT")
     test("TGE executed?", lambda: f"tge={token.tge_executed()}")
-    test("Self-allowance check", lambda: f"allowance={token.allowance(client.address, client.address)}")
+    test(
+        "Self-allowance check",
+        lambda: f"allowance={token.allowance(client.address, client.address)}",
+    )
     test("Token repr", lambda: repr(token))
 
     print()
@@ -147,9 +154,12 @@ def main():
     test("Bonus rate 90d", lambda: f"{staking.get_bonus_rate(90)} bps")
     test("Bonus rate 180d", lambda: f"{staking.get_bonus_rate(180)} bps")
     test("Bonus rate 365d", lambda: f"{staking.get_bonus_rate(365)} bps")
-    test("Deployer stake info", lambda: (
-        lambda s: f"active={s.active_stakes}, locked={s.total_locked_ether}, bonus={s.pending_bonus_ether}"
-    )(staking.get_stake_info()))
+    test(
+        "Deployer stake info",
+        lambda: (
+            lambda s: f"active={s.active_stakes}, locked={s.total_locked_ether}, bonus={s.pending_bonus_ether}"
+        )(staking.get_stake_info()),
+    )
     test("Deployer stake count", lambda: f"{staking.get_stake_count()} stakes")
     test("Staking repr", lambda: repr(staking))
 
@@ -188,9 +198,12 @@ def main():
     test("Image trusted?", lambda: f"trusted={zkml.is_image_trusted(test_image)}")
 
     # Test dev proof creation (off-chain only, no tx)
-    test("Create dev proof (off-chain)", lambda: (
-        lambda seal, proof_hash: f"seal={seal.hex()[:16]}..., hash={proof_hash.hex()[:16]}..."
-    )(*zkml.create_dev_proof(test_image, b"test-journal-data")))
+    test(
+        "Create dev proof (off-chain)",
+        lambda: (
+            lambda seal, proof_hash: f"seal={seal.hex()[:16]}..., hash={proof_hash.hex()[:16]}..."
+        )(*zkml.create_dev_proof(test_image, b"test-journal-data")),
+    )
 
     test("ZkML repr", lambda: repr(zkml))
 
@@ -210,9 +223,12 @@ def main():
     try:
         count = subnet.get_subnet_count()
         if count > 0:
-            test("Get subnet #1", lambda: (
-                lambda s: f"name={s.name}, owner={s.owner[:10]}..., nodes={s.node_count}/{s.max_nodes}, active={s.active}"
-            )(subnet.get_subnet(1)))
+            test(
+                "Get subnet #1",
+                lambda: (
+                    lambda s: f"name={s.name}, owner={s.owner[:10]}..., nodes={s.node_count}/{s.max_nodes}, active={s.active}"
+                )(subnet.get_subnet(1)),
+            )
         else:
             test("No subnets yet", lambda: "0 subnets (expected for fresh deployment)")
     except Exception:
@@ -257,28 +273,55 @@ def main():
     print("━" * 50)
 
     # Check that contract addresses are loaded correctly
-    test("MDTToken address loaded", lambda: f"addr={client._addresses.get('MDTToken', 'MISSING')[:16]}...")
-    test("MDTVesting address loaded", lambda: f"addr={client._addresses.get('MDTVesting', 'MISSING')[:16]}...")
-    test("MDTStaking address loaded", lambda: f"addr={client._addresses.get('MDTStaking', 'MISSING')[:16]}...")
-    test("ZkMLVerifier address loaded", lambda: f"addr={client._addresses.get('ZkMLVerifier', 'MISSING')[:16]}...")
-    test("AIOracle address loaded", lambda: f"addr={client._addresses.get('AIOracle', 'MISSING')[:16]}...")
-    test("SubnetRegistry address loaded", lambda: f"addr={client._addresses.get('SubnetRegistry', 'MISSING')[:16]}...")
+    test(
+        "MDTToken address loaded",
+        lambda: f"addr={client._addresses.get('MDTToken', 'MISSING')[:16]}...",
+    )
+    test(
+        "MDTVesting address loaded",
+        lambda: f"addr={client._addresses.get('MDTVesting', 'MISSING')[:16]}...",
+    )
+    test(
+        "MDTStaking address loaded",
+        lambda: f"addr={client._addresses.get('MDTStaking', 'MISSING')[:16]}...",
+    )
+    test(
+        "ZkMLVerifier address loaded",
+        lambda: f"addr={client._addresses.get('ZkMLVerifier', 'MISSING')[:16]}...",
+    )
+    test(
+        "AIOracle address loaded",
+        lambda: f"addr={client._addresses.get('AIOracle', 'MISSING')[:16]}...",
+    )
+    test(
+        "SubnetRegistry address loaded",
+        lambda: f"addr={client._addresses.get('SubnetRegistry', 'MISSING')[:16]}...",
+    )
 
     # Network config check
     from sdk.polkadot.config import NETWORKS
-    test("polkadot_testnet config", lambda: (
-        f"rpc={NETWORKS['polkadot_testnet'].rpc_url}, chain={NETWORKS['polkadot_testnet'].chain_id}"
-    ))
+
+    test(
+        "polkadot_testnet config",
+        lambda: (
+            f"rpc={NETWORKS['polkadot_testnet'].rpc_url}, chain={NETWORKS['polkadot_testnet'].chain_id}"
+        ),
+    )
 
     # Settings check
     from sdk.config.settings import settings
+
     test("Settings RPC URL", lambda: f"rpc={settings.LUXTENSOR_RPC_URL}")
 
     # CLI config check
     from sdk.cli.config import NETWORKS as CLI_NETWORKS
-    test("CLI polkadot_testnet config", lambda: (
-        f"rpc={CLI_NETWORKS['polkadot_testnet'].rpc_url}, chain={CLI_NETWORKS['polkadot_testnet'].chain_id}"
-    ))
+
+    test(
+        "CLI polkadot_testnet config",
+        lambda: (
+            f"rpc={CLI_NETWORKS['polkadot_testnet'].rpc_url}, chain={CLI_NETWORKS['polkadot_testnet'].chain_id}"
+        ),
+    )
 
     print()
 
@@ -286,8 +329,10 @@ def main():
     # SUMMARY
     # ══════════════════════════════════════════════════════════
     print("=" * 70)
-    print(f"  RESULTS: {passed_tests}/{total_tests} passed, "
-          f"{failed_tests} failed, {skipped_tests} skipped")
+    print(
+        f"  RESULTS: {passed_tests}/{total_tests} passed, "
+        f"{failed_tests} failed, {skipped_tests} skipped"
+    )
     print("=" * 70)
     print()
 

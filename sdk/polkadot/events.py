@@ -5,6 +5,8 @@ Enables miners/validators to listen for on-chain events:
 - AI requests (for miners to fulfill)
 - Staking events (for governance/monitoring)
 - Subnet registration and weight events
+- Federated learning jobs and gradient submissions
+- Training escrow tasks and reward claims
 """
 
 from __future__ import annotations
@@ -13,8 +15,6 @@ import logging
 import threading
 import time
 from typing import TYPE_CHECKING, Any, Callable, Optional
-
-from web3 import Web3
 
 if TYPE_CHECKING:
     from .client import PolkadotClient
@@ -116,6 +116,82 @@ class EventListener:
     ) -> list[dict[str, Any]]:
         """Get EpochCompleted events."""
         return self.get_events("SubnetRegistry", "EpochCompleted", from_block, to_block)
+
+    # ── GradientAggregator Events ───────────────────────────
+
+    def get_job_created(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get JobCreated events from GradientAggregator."""
+        return self.get_events("GradientAggregator", "JobCreated", from_block, to_block)
+
+    def get_gradient_submitted(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get GradientSubmitted events from GradientAggregator."""
+        return self.get_events("GradientAggregator", "GradientSubmitted", from_block, to_block)
+
+    def get_round_aggregated(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get RoundAggregated events from GradientAggregator."""
+        return self.get_events("GradientAggregator", "RoundAggregated", from_block, to_block)
+
+    def get_job_finalized(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get JobFinalized events from GradientAggregator."""
+        return self.get_events("GradientAggregator", "JobFinalized", from_block, to_block)
+
+    # ── TrainingEscrow Events ───────────────────────────────
+
+    def get_task_created(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get TaskCreated events from TrainingEscrow."""
+        return self.get_events("TrainingEscrow", "TaskCreated", from_block, to_block)
+
+    def get_trainer_joined(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get TrainerJoined events from TrainingEscrow."""
+        return self.get_events("TrainingEscrow", "TrainerJoined", from_block, to_block)
+
+    def get_result_submitted(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get ResultSubmitted events from TrainingEscrow."""
+        return self.get_events("TrainingEscrow", "ResultSubmitted", from_block, to_block)
+
+    def get_reward_claimed(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get RewardClaimed events from TrainingEscrow."""
+        return self.get_events("TrainingEscrow", "RewardClaimed", from_block, to_block)
+
+    def get_trainer_slashed(
+        self,
+        from_block: int | str = "latest",
+        to_block: int | str = "latest",
+    ) -> list[dict[str, Any]]:
+        """Get TrainerSlashed events from TrainingEscrow."""
+        return self.get_events("TrainingEscrow", "TrainerSlashed", from_block, to_block)
 
     # ── Generic Polling ─────────────────────────────────────
 

@@ -7,9 +7,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * @title LuxNFT - AI-Powered NFT Template for LuxTensor
+ * @title LuxNFT - AI-Powered NFT Template for ModernTensor
  * @notice NFT collection with AI-generated metadata support
- * @dev Deploy on LuxTensor network (chain ID: 1337 testnet, 777 mainnet)
+ * @dev Deploy on ModernTensor network via Polkadot Hub pallet-revive
  *
  * Features:
  * - ERC-721 standard compliant

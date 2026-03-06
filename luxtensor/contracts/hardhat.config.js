@@ -14,10 +14,19 @@ module.exports = {
         }
     },
     networks: {
-        // Default local network
+        // Default local network (standard EVM for tests)
         hardhat: {},
         // ============================================
-        // Polkadot Hub TestNet (Official - from docs)
+        // Moonbase Alpha — Moonbeam Testnet (Polkadot parachain EVM)
+        // ============================================
+        moonbase: {
+            url: "https://rpc.api.moonbase.moonbeam.network",
+            chainId: 1287,
+            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            timeout: 120000,
+        },
+        // ============================================
+        // Polkadot Hub TestNet (requires resolc compiler)
         // ============================================
         polkadotTestnet: {
             url: "https://services.polkadothub-rpc.com/testnet",
@@ -25,7 +34,7 @@ module.exports = {
             accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
             timeout: 120000,
         },
-        // Westend AssetHub (legacy/alternative)
+        // Westend AssetHub (requires resolc compiler)
         westend: {
             url: process.env.POLKADOT_TESTNET_RPC || "https://westend-asset-hub-eth-rpc.polkadot.io",
             chainId: 420420421,

@@ -180,6 +180,13 @@ contract MDTVesting is Ownable, ReentrancyGuard {
 
         totalAllocated += amount;
 
+        // [SECURITY] Solvency check: ensure contract holds enough tokens
+        uint256 committed = totalAllocated - totalClaimed;
+        require(
+            token.balanceOf(address(this)) >= committed,
+            "Insufficient token balance for vesting"
+        );
+
         emit VestingCreated(beneficiary, amount, category);
     }
 
@@ -279,6 +286,16 @@ contract MDTVesting is Ownable, ReentrancyGuard {
         require(!schedule.revoked, "Already revoked");
 
         uint256 vested = vestedAmount(beneficiary, index);
+
+        // [SECURITY] Auto-claim vested-but-unclaimed tokens for beneficiary
+        // Prevents tokens from being locked permanently after revocation
+        uint256 unclaimedVested = vested - schedule.claimedAmount;
+        if (unclaimedVested > 0) {
+            schedule.claimedAmount = vested;
+            totalClaimed += unclaimedVested;
+            token.safeTransfer(beneficiary, unclaimedVested);
+        }
+
         uint256 remaining = schedule.totalAmount - vested;
 
         schedule.revoked = true;

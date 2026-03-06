@@ -28,9 +28,8 @@ ModernTensor deploys its complete AI protocol stack onto **Polkadot Hub (AssetHu
 | `GradientAggregator` | Federated learning (FedAvg on-chain) | ~380 |
 | `TrainingEscrow` | Reward distribution + stake slashing | ~350 |
 | `SubnetRegistry` | Yuma Consensus, metagraph, quadratic voting | 968 |
-| `PaymentEscrow` | Pay-per-compute AI requests | ~200 |
 
-Plus **13 more contracts** including AI examples (`AnomalyGuard`, `ContentAuthenticator`, `SemanticMatchmaker`, `TrustGraph`), templates (`LuxNFT`, `LuxToken`), interfaces, and libraries.
+Plus **11 more contracts** including AI examples (`AnomalyGuard`, `ContentAuthenticator`, `SemanticMatchmaker`, `TrustGraph`), templates (`LuxNFT`, `LuxToken`, `PaymentEscrow`), interfaces, and libraries.
 
 ### Architecture on Polkadot Hub
 
@@ -51,7 +50,6 @@ Plus **13 more contracts** including AI examples (`AnomalyGuard`, `ContentAuthen
 │     │    (Training jobs + rounds)               │
 │     │                                           │
 │     ├──→ TrainingEscrow (Rewards + Slashing)    │
-│     │    PaymentEscrow (Pay-per-compute)        │
 │     │                                           │
 │     └──→ SubnetRegistry (Yuma Consensus)        │
 │          (Metagraph + Quadratic Voting)         │
@@ -90,7 +88,7 @@ cp .env.example .env
 # Visit: https://faucet.polkadot.io/ → select Westend AssetHub
 
 # 5. Deploy all 8 contracts
-npx hardhat run scripts/deploy-polkadot.js --network polkadot_testnet
+npx hardhat run scripts/deploy-polkadot.js --network polkadotTestnet
 
 # 6. View deployed addresses
 cat deployments-polkadot.json
@@ -108,7 +106,7 @@ cat deployments-polkadot.json
 
 ## 📋 Features
 
-### Smart Contracts (Solidity 0.8.20)
+### Smart Contracts (Solidity 0.8.28)
 
 - **MDT Token** — ERC20 with category-based minting (Emission 45%, Ecosystem 12%, Team 10%, etc.), burnable, permit
 - **Staking** — Time-lock staking with tiered bonus rates: 30d→10%, 90d→25%, 180d→50%, 365d→100%
@@ -148,7 +146,7 @@ cat deployments-polkadot.json
 moderntensor/
 ├── luxtensor/
 │   └── contracts/           # Solidity smart contracts
-│       ├── src/             # Contract source files (21 contracts)
+│       ├── src/             # Contract source files (19 contracts)
 │       ├── scripts/         # Deploy scripts (Hardhat)
 │       ├── artifacts/       # Compiled contract ABIs
 │       ├── hardhat.config.js

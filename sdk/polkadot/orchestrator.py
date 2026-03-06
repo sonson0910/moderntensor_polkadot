@@ -25,7 +25,6 @@ Flow:
 
 from __future__ import annotations
 
-import hashlib
 import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Optional
@@ -42,37 +41,41 @@ logger = logging.getLogger(__name__)
 # Data Structures
 # ═══════════════════════════════════════════════════════
 
+
 @dataclass
 class InferenceTask:
     """An AI inference task created by a validator."""
-    task_id: str           # Unique task identifier
-    model_name: str        # Human-readable model name
-    model_hash: bytes      # keccak256 of model_name
-    input_data: bytes      # Raw input for the model
-    payment_ether: float   # Payment for the task
-    oracle_tx: str = ""    # Oracle transaction hash
+
+    task_id: str  # Unique task identifier
+    model_name: str  # Human-readable model name
+    model_hash: bytes  # keccak256 of model_name
+    input_data: bytes  # Raw input for the model
+    payment_ether: float  # Payment for the task
+    oracle_tx: str = ""  # Oracle transaction hash
     request_id: bytes = b""  # Oracle request ID
 
 
 @dataclass
 class MinerResult:
     """Result submitted by a miner for an inference task."""
-    miner_address: str       # Miner's address
-    miner_uid: int           # Miner's UID in subnet
-    task_id: str             # Which task this is for
-    output: bytes            # AI model output
-    seal: bytes = b""        # zkML proof seal
+
+    miner_address: str  # Miner's address
+    miner_uid: int  # Miner's UID in subnet
+    task_id: str  # Which task this is for
+    output: bytes  # AI model output
+    seal: bytes = b""  # zkML proof seal
     proof_hash: bytes = b""  # zkML proof hash
     proof_verified: bool = False  # Was proof verified on-chain?
-    quality_score: float = 0.0   # Computed quality score (0-1)
-    oracle_tx: str = ""      # Fulfillment TX hash
+    quality_score: float = 0.0  # Computed quality score (0-1)
+    oracle_tx: str = ""  # Fulfillment TX hash
 
 
 @dataclass
 class EvaluationResult:
     """Result of evaluating all miners in a cycle."""
+
     miner_scores: dict[int, float] = field(default_factory=dict)  # uid → score
-    weights_set_tx: str = ""     # TX hash of set_weights call
+    weights_set_tx: str = ""  # TX hash of set_weights call
     total_tasks: int = 0
     verified_proofs: int = 0
     average_quality: float = 0.0
@@ -81,6 +84,7 @@ class EvaluationResult:
 # ═══════════════════════════════════════════════════════
 # AI Subnet Orchestrator
 # ═══════════════════════════════════════════════════════
+
 
 class AISubnetOrchestrator:
     """
@@ -107,10 +111,12 @@ class AISubnetOrchestrator:
         client: PolkadotClient,
         netuid: int,
         model_prefix: str = "moderntensor",
+        validator_uid: int = 0,
     ) -> None:
         self._client = client
         self._netuid = netuid
         self._model_prefix = model_prefix
+        self._validator_uid = validator_uid
         self._tasks: dict[str, InferenceTask] = {}
         self._llm_adapter = None  # Lazy-initialized on first use
 
@@ -216,7 +222,9 @@ class AISubnetOrchestrator:
         # 3. Ensure image is trusted before verification (auto-trust)
         try:
             if not self._client.zkml.is_image_trusted(image_id):
-                logger.info("Auto-trusting image %s for model %s", image_id.hex()[:16], task.model_name)
+                logger.info(
+                    "Auto-trusting image %s for model %s", image_id.hex()[:16], task.model_name
+                )
                 self._client.zkml.trust_image(image_id)
         except Exception as e:
             logger.debug("Image trust check skipped (may need owner): %s", e)
@@ -247,7 +255,9 @@ class AISubnetOrchestrator:
 
         logger.info(
             "Miner %s processed task %s (proof_verified=%s)",
-            miner_client.address[:12], task.task_id, proof_verified,
+            miner_client.address[:12],
+            task.task_id,
+            proof_verified,
         )
         return result
 
@@ -324,8 +334,18 @@ class AISubnetOrchestrator:
 
         logger.info(
             "Committed weights for %d miners, tx=%s (waiting for reveal window...)",
-            len(uids), commit_tx,
+            len(uids),
+            commit_tx,
         )
+
+        # Mine blocks to pass the commit-reveal window (local/testnet)
+        # commitMinDelay is typically 10 blocks, so mine 15 to be safe
+        try:
+            w3 = self._client.w3
+            for _ in range(15):
+                w3.provider.make_request("evm_mine", [])
+        except Exception:
+            pass  # Not available on production networks
 
         # Phase 2: Reveal (uses legacy set_weights as fallback if
         # commit-reveal window hasn't passed yet on testnet)
@@ -339,13 +359,23 @@ class AISubnetOrchestrator:
             final_tx = reveal_tx
         except Exception as e:
             logger.warning(
-                "Reveal failed (window not open?), falling back to set_weights: %s", e,
+                "Reveal failed (%s), attempting set_weights fallback...",
+                e,
             )
-            final_tx = self.subnet.set_weights(
-                netuid=self._netuid,
-                uids=uids,
-                weights=weights,
-            )
+            try:
+                final_tx = self.subnet.set_weights(
+                    netuid=self._netuid,
+                    validator_uid=self._validator_uid,
+                    uids=uids,
+                    weights=weights,
+                )
+            except Exception as e2:
+                logger.warning(
+                    "set_weights fallback also failed (onlyOwner?): %s — "
+                    "weights were committed but not revealed",
+                    e2,
+                )
+                final_tx = commit_tx  # Use commit tx as reference
 
         avg_quality = sum(scores.values()) / len(scores) if scores else 0
 
@@ -359,7 +389,11 @@ class AISubnetOrchestrator:
 
         logger.info(
             "Evaluated %d miners (%d tasks): avg_quality=%.2f, verified=%d, tx=%s",
-            len(scores), len(results), avg_quality, verified_count, final_tx,
+            len(scores),
+            len(results),
+            avg_quality,
+            verified_count,
+            final_tx,
         )
         return evaluation
 
@@ -426,6 +460,7 @@ class AISubnetOrchestrator:
         if self._llm_adapter is None:
             try:
                 from .llm_adapter import LocalLLMAdapter
+
                 self._llm_adapter = LocalLLMAdapter.auto_detect()
                 logger.info("AI backend auto-detected: %s", self._llm_adapter)
             except Exception as e:
@@ -442,7 +477,8 @@ class AISubnetOrchestrator:
             output = self._llm_adapter.infer(prompt)
             logger.info(
                 "AI inference completed: backend=%s, output=%d bytes",
-                self._llm_adapter.backend, len(output),
+                self._llm_adapter.backend,
+                len(output),
             )
             return output
         except Exception as e:

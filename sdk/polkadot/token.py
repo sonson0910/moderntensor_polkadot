@@ -200,7 +200,7 @@ class TokenClient:
             Transaction hash
         """
         self._require_vesting()
-        tx = self._vesting.functions.setTGETimestamp(timestamp).build_transaction({})
+        tx = self._vesting.functions.setTGE(timestamp).build_transaction({})
         return self._client.send_tx(tx)
 
     def create_team_vesting(self, beneficiary: str, amount: int) -> str:
@@ -300,34 +300,28 @@ class TokenClient:
         self._require_vesting()
         return self._vesting.functions.vestedAmount(Web3.to_checksum_address(address), index).call()
 
-    def get_vesting_info(self, address: Optional[str] = None) -> list[VestingScheduleInfo]:
+    def get_vesting_info(self, address: Optional[str] = None) -> dict:
         """
-        Get all vesting schedules for a beneficiary.
+        Get aggregated vesting info for a beneficiary.
+
+        The contract's getVestingInfo() returns 4 scalar values:
+          (scheduleCount, totalVested, totalClaimable, totalClaimed)
 
         Args:
             address: Beneficiary address (defaults to caller)
 
         Returns:
-            List of VestingScheduleInfo
+            Dict with schedule_count, total_vested, total_claimable, total_claimed (all in wei)
         """
         self._require_vesting()
         addr = address or self._client.address
         result = self._vesting.functions.getVestingInfo(Web3.to_checksum_address(addr)).call()
-        schedules = []
-        for s in result:
-            schedules.append(
-                VestingScheduleInfo(
-                    total_amount=s[0],
-                    claimed_amount=s[1],
-                    start_time=s[2],
-                    cliff_duration=s[3],
-                    vesting_duration=s[4],
-                    tge_percent=s[5],
-                    revocable=s[6],
-                    revoked=s[7],
-                )
-            )
-        return schedules
+        return {
+            "schedule_count": result[0],
+            "total_vested": result[1],
+            "total_claimable": result[2],
+            "total_claimed": result[3],
+        }
 
     def __repr__(self) -> str:
         try:

@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "./AIOracle.sol";
 
 /**
- * @title ExampleGame - Demo AI-powered dApp on LuxTensor
+ * @title ExampleGame - Demo AI-powered dApp on ModernTensor
  * @notice A simple game that uses AI to generate random numbers and validate moves
  * @dev Example consumer of AIOracle for demonstration purposes
  *
