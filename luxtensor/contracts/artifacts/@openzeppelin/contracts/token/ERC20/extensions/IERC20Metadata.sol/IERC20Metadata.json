@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh-resolc-artifact-1",
   "contractName": "IERC20Metadata",
   "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
   "abi": [

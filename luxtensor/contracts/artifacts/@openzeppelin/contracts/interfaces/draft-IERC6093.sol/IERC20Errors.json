@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh-resolc-artifact-1",
   "contractName": "IERC20Errors",
   "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
   "abi": [

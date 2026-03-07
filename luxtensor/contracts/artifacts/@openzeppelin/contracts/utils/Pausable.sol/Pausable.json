@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh-resolc-artifact-1",
   "contractName": "Pausable",
   "sourceName": "@openzeppelin/contracts/utils/Pausable.sol",
   "abi": [

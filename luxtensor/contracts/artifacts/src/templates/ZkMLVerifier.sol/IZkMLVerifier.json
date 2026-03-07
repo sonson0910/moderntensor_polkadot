@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh-resolc-artifact-1",
   "contractName": "IZkMLVerifier",
   "sourceName": "src/templates/ZkMLVerifier.sol",
   "abi": [

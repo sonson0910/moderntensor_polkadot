@@ -14,7 +14,8 @@ async function main() {
     console.log("ModernTensor — Polkadot Hub TestNet Deployment");
     console.log("=".repeat(60));
     console.log("Deployer:", deployer.address);
-    console.log("Balance:", hre.ethers.formatEther(balance), "PAS");
+    const tokenName = hre.network.name === 'westend' ? 'WND' : 'PAS';
+    console.log("Balance:", hre.ethers.formatEther(balance), tokenName);
     console.log("Network:", hre.network.name);
     console.log("=".repeat(60));
 
@@ -78,13 +79,13 @@ async function main() {
         console.log(`  ${name}: ${addr}`);
     }
     console.log("\n⛽ Total Gas Used:", totalGas.toString());
-    console.log("💰 PAS Spent:", hre.ethers.formatEther(balance - endBalance));
-    console.log("💰 Remaining:", hre.ethers.formatEther(endBalance), "PAS");
+    console.log("💰 " + tokenName + " Spent:", hre.ethers.formatEther(balance - endBalance));
+    console.log("💰 Remaining:", hre.ethers.formatEther(endBalance), tokenName);
 
     // Save deployment info
     const info = {
-        network: "polkadot_hub_testnet",
-        chainId: 420420417,
+        network: hre.network.name,
+        chainId: (await hre.ethers.provider.getNetwork()).chainId.toString(),
         deployer: deployer.address,
         timestamp: new Date().toISOString(),
         contracts: deployed,

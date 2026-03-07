@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh-resolc-artifact-1",
   "contractName": "IERC721Receiver",
   "sourceName": "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
   "abi": [

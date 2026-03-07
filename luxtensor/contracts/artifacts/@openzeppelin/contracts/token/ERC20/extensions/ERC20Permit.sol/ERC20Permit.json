@@ -1,5 +1,5 @@
 {
-  "_format": "hh-sol-artifact-1",
+  "_format": "hh-resolc-artifact-1",
   "contractName": "ERC20Permit",
   "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol",
   "abi": [

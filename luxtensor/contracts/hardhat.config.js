@@ -1,5 +1,14 @@
+require("@parity/hardhat-polkadot");
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
+
+// Ensure private key has 0x prefix
+function formatKey(key) {
+    if (!key) return undefined;
+    return key.startsWith("0x") ? key : `0x${key}`;
+}
+
+const PRIVATE_KEY = formatKey(process.env.PRIVATE_KEY);
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -13,6 +22,16 @@ module.exports = {
             }
         }
     },
+    resolc: {
+        version: "0.6.0",
+        compilerSource: "binary",
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 200,
+            },
+        },
+    },
     networks: {
         // Default local network (standard EVM for tests)
         hardhat: {},
@@ -22,7 +41,7 @@ module.exports = {
         moonbase: {
             url: "https://rpc.api.moonbase.moonbeam.network",
             chainId: 1287,
-            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             timeout: 120000,
         },
         // ============================================
@@ -31,15 +50,17 @@ module.exports = {
         polkadotTestnet: {
             url: "https://services.polkadothub-rpc.com/testnet",
             chainId: 420420417,
-            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             timeout: 120000,
+            polkadot: true,
         },
         // Westend AssetHub (requires resolc compiler)
         westend: {
             url: process.env.POLKADOT_TESTNET_RPC || "https://westend-asset-hub-eth-rpc.polkadot.io",
             chainId: 420420421,
-            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+            accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             timeout: 120000,
+            polkadot: true,
         },
     },
     paths: {

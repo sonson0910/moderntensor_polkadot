@@ -1,10 +1,10 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\examples\\AnomalyGuard.sol": {
-      "lastModificationDate": 1772600898257,
-      "contentHash": "cd4ab09a9208c287b8a67814eda0f93b",
-      "sourceName": "src/examples/AnomalyGuard.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/GradientAggregator.sol": {
+      "lastModificationDate": 1772630770996,
+      "contentHash": "9e70e82b407fa06f95492c9ca6c0615e",
+      "sourceName": "src/GradientAggregator.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -18,31 +18,43 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
           }
         }
       },
       "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "@openzeppelin/contracts/utils/Pausable.sol"
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "AnomalyGuard"
+        "GradientAggregator"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\ReentrancyGuard.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
       "lastModificationDate": 1772605215319,
       "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
       "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
@@ -59,14 +71,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -79,46 +102,7 @@
         "ReentrancyGuard"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\Pausable.sol": {
-      "lastModificationDate": 1772605215313,
-      "contentHash": "0d47b53e10b1985efbb396f937626279",
-      "sourceName": "@openzeppelin/contracts/utils/Pausable.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../utils/Context.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Pausable"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\access\\Ownable.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
       "lastModificationDate": 1772605215304,
       "contentHash": "d3c790edc9ccf808a17c5a6cd13614fd",
       "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
@@ -135,14 +119,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -157,7 +152,106 @@
         "Ownable"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1772605215239,
+      "contentHash": "9261adf6457863de3e9892f51317ec89",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol": {
+      "lastModificationDate": 1772605215326,
+      "contentHash": "1fb9edee1d763745a62d0b1954998792",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC20.sol",
+        "../../../interfaces/IERC1363.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SafeERC20"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/Context.sol": {
       "lastModificationDate": 1772605215025,
       "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
@@ -174,14 +268,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -194,7 +299,406 @@
         "Context"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\ERC721Burnable.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/interfaces/IERC1363.sol": {
+      "lastModificationDate": 1772605215226,
+      "contentHash": "a7fd0f05e36b0d0a21c75340c9c639ec",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC1363.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol",
+        "./IERC165.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.2"
+      ],
+      "artifacts": [
+        "IERC1363"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/interfaces/IERC165.sol": {
+      "lastModificationDate": 1772605215230,
+      "contentHash": "947853028399b7de34bcc3704ee06e99",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC165.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/introspection/IERC165.sol"
+      ],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": []
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/interfaces/IERC20.sol": {
+      "lastModificationDate": 1772605215238,
+      "contentHash": "68620db2da7583d9a4919096ac77f577",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "../token/ERC20/IERC20.sol"
+      ],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": []
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": {
+      "lastModificationDate": 1772605215232,
+      "contentHash": "7074c93b1ea0a122063f26ddd1db1032",
+      "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": [
+        "IERC165"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+      "lastModificationDate": 1772605215242,
+      "contentHash": "513778b30d2750f5d2b9b19bbcf748a5",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC20.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.2"
+      ],
+      "artifacts": [
+        "IERC20Metadata"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+      "lastModificationDate": 1772605215126,
+      "contentHash": "59dfce11284f2636db261df9b6a18f81",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol",
+        "./extensions/IERC20Metadata.sol",
+        "../../utils/Context.sol",
+        "../../interfaces/draft-IERC6093.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ERC20"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol": {
+      "lastModificationDate": 1772605215067,
+      "contentHash": "5041977bbe908de2e6ed0270447f79ad",
+      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.8.4"
+      ],
+      "artifacts": [
+        "IERC1155Errors",
+        "IERC20Errors",
+        "IERC721Errors"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol": {
+      "lastModificationDate": 1772605215128,
+      "contentHash": "273d8d24b06f67207dd5f35c3a0c1086",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "../ERC20.sol",
+        "../../../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ERC20Burnable"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol": {
       "lastModificationDate": 1772605215153,
       "contentHash": "594379619f21d2767c325a6c46b53399",
       "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol",
@@ -211,14 +715,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -234,7 +749,7 @@
         "ERC721Burnable"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\ERC721.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol": {
       "lastModificationDate": 1772605215151,
       "contentHash": "522ec023bce510c30dfbf61584f5a190",
       "sourceName": "@openzeppelin/contracts/token/ERC721/ERC721.sol",
@@ -251,14 +766,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -279,7 +805,7 @@
         "ERC721"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\Strings.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
       "lastModificationDate": 1772605215347,
       "contentHash": "d8f70caf0e0c77dc908176ed44812fb7",
       "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
@@ -296,14 +822,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -320,46 +857,7 @@
         "Strings"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC6093.sol": {
-      "lastModificationDate": 1772605215067,
-      "contentHash": "5041977bbe908de2e6ed0270447f79ad",
-      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.8.4"
-      ],
-      "artifacts": [
-        "IERC1155Errors",
-        "IERC20Errors",
-        "IERC721Errors"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\ERC165.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": {
       "lastModificationDate": 1772605215117,
       "contentHash": "0906d06dca25210d4696dcef6dad2909",
       "sourceName": "@openzeppelin/contracts/utils/introspection/ERC165.sol",
@@ -376,14 +874,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -398,7 +907,7 @@
         "ERC165"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\IERC721.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol": {
       "lastModificationDate": 1772605215264,
       "contentHash": "f62e11dbd302e17a5621a1438f4e054c",
       "sourceName": "@openzeppelin/contracts/token/ERC721/IERC721.sol",
@@ -415,14 +924,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -437,47 +957,7 @@
         "IERC721"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\utils\\ERC721Utils.sol": {
-      "lastModificationDate": 1772605215166,
-      "contentHash": "4cefad279a37c895b709bce2b901816e",
-      "sourceName": "@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../IERC721Receiver.sol",
-        "../../../interfaces/draft-IERC6093.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC721Utils"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol": {
       "lastModificationDate": 1772605215269,
       "contentHash": "136c64eca25bcb8a68f43ac6605559f9",
       "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
@@ -494,14 +974,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -516,10 +1007,10 @@
         "IERC721Metadata"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SafeCast.sol": {
-      "lastModificationDate": 1772605215324,
-      "contentHash": "2adca1150f58fc6f3d1f0a0f22ee7cca",
-      "sourceName": "@openzeppelin/contracts/utils/math/SafeCast.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol": {
+      "lastModificationDate": 1772605215166,
+      "contentHash": "4cefad279a37c895b709bce2b901816e",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -533,27 +1024,41 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
           }
         }
       },
-      "imports": [],
+      "imports": [
+        "../IERC721Receiver.sol",
+        "../../../interfaces/draft-IERC6093.sol"
+      ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "SafeCast"
+        "ERC721Utils"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\math\\Math.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol": {
       "lastModificationDate": 1772605215289,
       "contentHash": "5ec781e33d3a9ac91ffdc83d94420412",
       "sourceName": "@openzeppelin/contracts/utils/math/Math.sol",
@@ -570,14 +1075,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -593,7 +1109,55 @@
         "Math"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SignedMath.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/math/SafeCast.sol": {
+      "lastModificationDate": 1772605215324,
+      "contentHash": "2adca1150f58fc6f3d1f0a0f22ee7cca",
+      "sourceName": "@openzeppelin/contracts/utils/math/SafeCast.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SafeCast"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/math/SignedMath.sol": {
       "lastModificationDate": 1772605215331,
       "contentHash": "ae3528afb8bdb0a7dcfba5b115ee8074",
       "sourceName": "@openzeppelin/contracts/utils/math/SignedMath.sol",
@@ -610,14 +1174,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -632,7 +1207,7 @@
         "SignedMath"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\Panic.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/Panic.sol": {
       "lastModificationDate": 1772605215312,
       "contentHash": "2133dc13536b4a6a98131e431fac59e1",
       "sourceName": "@openzeppelin/contracts/utils/Panic.sol",
@@ -649,14 +1224,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -669,44 +1255,7 @@
         "Panic"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\IERC165.sol": {
-      "lastModificationDate": 1772605215232,
-      "contentHash": "7074c93b1ea0a122063f26ddd1db1032",
-      "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC165"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\IERC721Receiver.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol": {
       "lastModificationDate": 1772605215271,
       "contentHash": "d61660a41ce200e99816e4734f7fd202",
       "sourceName": "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
@@ -723,14 +1272,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -743,7 +1303,7 @@
         "IERC721Receiver"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\ERC721URIStorage.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol": {
       "lastModificationDate": 1772605215164,
       "contentHash": "0b00dd0d9f2738855f17aa283bfa3ff5",
       "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
@@ -760,14 +1320,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -786,44 +1357,7 @@
         "ERC721URIStorage"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC165.sol": {
-      "lastModificationDate": 1772605215230,
-      "contentHash": "947853028399b7de34bcc3704ee06e99",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC165.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../utils/introspection/IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": []
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC4906.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/interfaces/IERC4906.sol": {
       "lastModificationDate": 1772605215256,
       "contentHash": "4386d2e9b1578157802062e156bd9ae1",
       "sourceName": "@openzeppelin/contracts/interfaces/IERC4906.sol",
@@ -840,14 +1374,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -863,7 +1408,7 @@
         "IERC4906"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC721.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/interfaces/IERC721.sol": {
       "lastModificationDate": 1772605215262,
       "contentHash": "6b9716905fb42874ed1769ae7f7458b1",
       "sourceName": "@openzeppelin/contracts/interfaces/IERC721.sol",
@@ -880,14 +1425,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -900,10 +1456,10 @@
       ],
       "artifacts": []
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC1363.sol": {
-      "lastModificationDate": 1772605215226,
-      "contentHash": "a7fd0f05e36b0d0a21c75340c9c639ec",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC1363.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol": {
+      "lastModificationDate": 1772605215294,
+      "contentHash": "260f3968eefa3bbd30520cff5384cd93",
+      "sourceName": "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -917,33 +1473,43 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
           }
         }
       },
       "imports": [
-        "./IERC20.sol",
-        "./IERC165.sol"
+        "../Strings.sol"
       ],
       "versionPragmas": [
-        ">=0.6.2"
+        "^0.8.20"
       ],
       "artifacts": [
-        "IERC1363"
+        "MessageHashUtils"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC20.sol": {
-      "lastModificationDate": 1772605215238,
-      "contentHash": "68620db2da7583d9a4919096ac77f577",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC20.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol": {
+      "lastModificationDate": 1772605215084,
+      "contentHash": "d67dfba302ed2489324d7584625c3bde",
+      "sourceName": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -957,30 +1523,45 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
           }
         }
       },
       "imports": [
-        "../token/ERC20/IERC20.sol"
+        "./MessageHashUtils.sol",
+        "../ShortStrings.sol",
+        "../../interfaces/IERC5267.sol"
       ],
       "versionPragmas": [
-        ">=0.4.16"
+        "^0.8.20"
       ],
-      "artifacts": []
+      "artifacts": [
+        "EIP712"
+      ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
-      "lastModificationDate": 1772605215239,
-      "contentHash": "9261adf6457863de3e9892f51317ec89",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/ShortStrings.sol": {
+      "lastModificationDate": 1772605215327,
+      "contentHash": "c1be9487e5a64acf23b5d8028482e748",
+      "sourceName": "@openzeppelin/contracts/utils/ShortStrings.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -994,14 +1575,75 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "./StorageSlot.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ShortStrings"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/interfaces/IERC5267.sol": {
+      "lastModificationDate": 1772605215257,
+      "contentHash": "6e00d2fe4bc0d5f1add753824498bb35",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC5267.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1011,13 +1653,13 @@
         ">=0.4.16"
       ],
       "artifacts": [
-        "IERC20"
+        "IERC5267"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
-      "lastModificationDate": 1772605215242,
-      "contentHash": "513778b30d2750f5d2b9b19bbcf748a5",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/StorageSlot.sol": {
+      "lastModificationDate": 1772605215345,
+      "contentHash": "e656d64c4ce918f3d13030b91c935134",
+      "sourceName": "@openzeppelin/contracts/utils/StorageSlot.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -1031,71 +1673,38 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
-          }
-        }
-      },
-      "imports": [
-        "../IERC20.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC20Metadata"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
-      "lastModificationDate": 1772605215126,
-      "contentHash": "59dfce11284f2636db261df9b6a18f81",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
           },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
       },
-      "imports": [
-        "./IERC20.sol",
-        "./extensions/IERC20Metadata.sol",
-        "../../utils/Context.sol",
-        "../../interfaces/draft-IERC6093.sol"
-      ],
+      "imports": [],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "ERC20"
+        "StorageSlot"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\ERC20Permit.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol": {
       "lastModificationDate": 1772605215135,
       "contentHash": "2343c0c3b51267f4f2639ec3f99cd63e",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol",
@@ -1112,14 +1721,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1138,7 +1758,7 @@
         "ERC20Permit"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\Nonces.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/Nonces.sol": {
       "lastModificationDate": 1772605215301,
       "contentHash": "c32d108058718efb9061b88e83a83f79",
       "sourceName": "@openzeppelin/contracts/utils/Nonces.sol",
@@ -1155,14 +1775,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1175,7 +1806,7 @@
         "Nonces"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\ECDSA.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": {
       "lastModificationDate": 1772605215081,
       "contentHash": "81de029d56aa803972be03c5d277cb6c",
       "sourceName": "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
@@ -1192,14 +1823,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1212,48 +1854,7 @@
         "ECDSA"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\EIP712.sol": {
-      "lastModificationDate": 1772605215084,
-      "contentHash": "d67dfba302ed2489324d7584625c3bde",
-      "sourceName": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./MessageHashUtils.sol",
-        "../ShortStrings.sol",
-        "../../interfaces/IERC5267.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "EIP712"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Permit.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol": {
       "lastModificationDate": 1772605215244,
       "contentHash": "b01905745d47df90c7bd5dd70d498cb7",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol",
@@ -1270,14 +1871,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1290,159 +1902,7 @@
         "IERC20Permit"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\ShortStrings.sol": {
-      "lastModificationDate": 1772605215327,
-      "contentHash": "c1be9487e5a64acf23b5d8028482e748",
-      "sourceName": "@openzeppelin/contracts/utils/ShortStrings.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./StorageSlot.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ShortStrings"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC5267.sol": {
-      "lastModificationDate": 1772605215257,
-      "contentHash": "6e00d2fe4bc0d5f1add753824498bb35",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC5267.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC5267"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\MessageHashUtils.sol": {
-      "lastModificationDate": 1772605215294,
-      "contentHash": "260f3968eefa3bbd30520cff5384cd93",
-      "sourceName": "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../Strings.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "MessageHashUtils"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\utils\\StorageSlot.sol": {
-      "lastModificationDate": 1772605215345,
-      "contentHash": "e656d64c4ce918f3d13030b91c935134",
-      "sourceName": "@openzeppelin/contracts/utils/StorageSlot.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "StorageSlot"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\LuxToken.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/templates/LuxToken.sol": {
       "lastModificationDate": 1772627327521,
       "contentHash": "1a15413bf060417ca4215c8477c5f501",
       "sourceName": "src/templates/LuxToken.sol",
@@ -1459,14 +1919,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1484,10 +1955,10 @@
         "LuxToken"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\ERC20Burnable.sol": {
-      "lastModificationDate": 1772605215128,
-      "contentHash": "273d8d24b06f67207dd5f35c3a0c1086",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/templates/ZkMLVerifier.sol": {
+      "lastModificationDate": 1772630771022,
+      "contentHash": "7bcd50bce6ecc19c79fd16b4e0fea2c3",
+      "sourceName": "src/templates/ZkMLVerifier.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -1501,75 +1972,44 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
-          }
-        }
-      },
-      "imports": [
-        "../ERC20.sol",
-        "../../../utils/Context.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC20Burnable"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\MDTToken.sol": {
-      "lastModificationDate": 1772600898256,
-      "contentHash": "de543501ad85d5e1079ca7550a98c1c7",
-      "sourceName": "src/MDTToken.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
           },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
       },
       "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol",
-        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol",
         "@openzeppelin/contracts/access/Ownable.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "MDTToken"
+        "IZkMLVerifier",
+        "ZkMLVerifier"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\utils\\SafeERC20.sol": {
-      "lastModificationDate": 1772605215326,
-      "contentHash": "1fb9edee1d763745a62d0b1954998792",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/templates/AIOracle.sol": {
+      "lastModificationDate": 1772630770996,
+      "contentHash": "6aa19fdbcf4415a399fc799b551f1a12",
+      "sourceName": "src/templates/AIOracle.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -1583,72 +2023,92 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
-          }
-        }
-      },
-      "imports": [
-        "../IERC20.sol",
-        "../../../interfaces/IERC1363.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SafeERC20"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\TrainingEscrow.sol": {
-      "lastModificationDate": 1772773837791,
-      "contentHash": "44b1673598efdf177111755f960b3ab6",
-      "sourceName": "src/TrainingEscrow.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
           },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
       },
       "imports": [
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "./ZkMLVerifier.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "TrainingEscrow"
+        "AIOracle"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\PaymentEscrow.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/templates/ExampleGame.sol": {
+      "lastModificationDate": 1772627327521,
+      "contentHash": "b7dec4861dd83a9fe5b4ee03a99c0759",
+      "sourceName": "src/templates/ExampleGame.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "./AIOracle.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ExampleGame"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/templates/PaymentEscrow.sol": {
       "lastModificationDate": 1772600898259,
       "contentHash": "1b5cacdab2bdb715caa861952d8d090c",
       "sourceName": "src/templates/PaymentEscrow.sol",
@@ -1665,14 +2125,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1690,10 +2161,10 @@
         "PaymentEscrow"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\AIOracle.sol": {
-      "lastModificationDate": 1772630770996,
-      "contentHash": "6aa19fdbcf4415a399fc799b551f1a12",
-      "sourceName": "src/templates/AIOracle.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/examples/TrustGraph.sol": {
+      "lastModificationDate": 1772600898257,
+      "contentHash": "383612c424fe83345be7808d196bb5fd",
+      "sourceName": "src/examples/TrustGraph.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -1707,14 +2178,127 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "TrustGraph"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/examples/SemanticMatchmaker.sol": {
+      "lastModificationDate": 1772600898257,
+      "contentHash": "b72b2fa234d44b9f3ea2962b3c8a7c34",
+      "sourceName": "src/examples/SemanticMatchmaker.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SemanticMatchmaker"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/examples/ContentAuthenticator.sol": {
+      "lastModificationDate": 1772600898257,
+      "contentHash": "0a9d3a95c333f20e1144bf8c8853b629",
+      "sourceName": "src/examples/ContentAuthenticator.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1722,19 +2306,19 @@
       "imports": [
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "./ZkMLVerifier.sol"
+        "@openzeppelin/contracts/token/ERC721/ERC721.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "AIOracle"
+        "ContentAuthenticator"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\ZkMLVerifier.sol": {
-      "lastModificationDate": 1772630771022,
-      "contentHash": "7bcd50bce6ecc19c79fd16b4e0fea2c3",
-      "sourceName": "src/templates/ZkMLVerifier.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/examples/AnomalyGuard.sol": {
+      "lastModificationDate": 1772600898257,
+      "contentHash": "cd4ab09a9208c287b8a67814eda0f93b",
+      "sourceName": "src/examples/AnomalyGuard.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -1748,33 +2332,45 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
           }
         }
       },
       "imports": [
-        "@openzeppelin/contracts/access/Ownable.sol"
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/utils/Pausable.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "IZkMLVerifier",
-        "ZkMLVerifier"
+        "AnomalyGuard"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\ExampleGame.sol": {
-      "lastModificationDate": 1772627327521,
-      "contentHash": "b7dec4861dd83a9fe5b4ee03a99c0759",
-      "sourceName": "src/templates/ExampleGame.sol",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/node_modules/@openzeppelin/contracts/utils/Pausable.sol": {
+      "lastModificationDate": 1772605215313,
+      "contentHash": "0d47b53e10b1985efbb396f937626279",
+      "sourceName": "@openzeppelin/contracts/utils/Pausable.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -1788,31 +2384,95 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
             }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
           }
         }
       },
       "imports": [
-        "./AIOracle.sol"
+        "../utils/Context.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "ExampleGame"
+        "Pausable"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\SubnetRegistry.sol": {
-      "lastModificationDate": 1772776723669,
-      "contentHash": "7ab52338f2a625c1449fa7e75089e930",
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/TrainingEscrow.sol": {
+      "lastModificationDate": 1772776723599,
+      "contentHash": "44b1673598efdf177111755f960b3ab6",
+      "sourceName": "src/TrainingEscrow.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "TrainingEscrow"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/SubnetRegistry.sol": {
+      "lastModificationDate": 1772810055605,
+      "contentHash": "4df6c721a7899ab375550ae3f822ab83",
       "sourceName": "src/SubnetRegistry.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1827,14 +2487,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1852,8 +2523,8 @@
         "SubnetRegistry"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\MDTVesting.sol": {
-      "lastModificationDate": 1772773808845,
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/MDTVesting.sol": {
+      "lastModificationDate": 1772776723598,
       "contentHash": "3bef98aa7d28cbb291ff69e5213ff6cd",
       "sourceName": "src/MDTVesting.sol",
       "solcConfig": {
@@ -1869,14 +2540,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1894,7 +2576,7 @@
         "MDTVesting"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\MDTStaking.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/MDTStaking.sol": {
       "lastModificationDate": 1772630770982,
       "contentHash": "dc197f71957111f16f47041a7c0a00b7",
       "sourceName": "src/MDTStaking.sol",
@@ -1911,14 +2593,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -1936,171 +2629,8 @@
         "MDTStaking"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\GradientAggregator.sol": {
-      "lastModificationDate": 1772630770996,
-      "contentHash": "9e70e82b407fa06f95492c9ca6c0615e",
-      "sourceName": "src/GradientAggregator.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "GradientAggregator"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\examples\\TrustGraph.sol": {
-      "lastModificationDate": 1772600898257,
-      "contentHash": "383612c424fe83345be7808d196bb5fd",
-      "sourceName": "src/examples/TrustGraph.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "TrustGraph"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\examples\\SemanticMatchmaker.sol": {
-      "lastModificationDate": 1772600898257,
-      "contentHash": "b72b2fa234d44b9f3ea2962b3c8a7c34",
-      "sourceName": "src/examples/SemanticMatchmaker.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SemanticMatchmaker"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\examples\\ContentAuthenticator.sol": {
-      "lastModificationDate": 1772600898257,
-      "contentHash": "0a9d3a95c333f20e1144bf8c8853b629",
-      "sourceName": "src/examples/ContentAuthenticator.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "@openzeppelin/contracts/token/ERC721/ERC721.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ContentAuthenticator"
-      ]
-    },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\LuxNFT.sol": {
-      "lastModificationDate": 1772625828872,
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/templates/LuxNFT.sol": {
+      "lastModificationDate": 1772627327521,
       "contentHash": "b655300ca5ae3d920ce4d57bf6af0f6f",
       "sourceName": "src/templates/LuxNFT.sol",
       "solcConfig": {
@@ -2116,14 +2646,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -2141,7 +2682,60 @@
         "LuxNFT"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\SimpleStorage.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/MDTToken.sol": {
+      "lastModificationDate": 1772600898256,
+      "contentHash": "de543501ad85d5e1079ca7550a98c1c7",
+      "sourceName": "src/MDTToken.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol",
+        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "MDTToken"
+      ]
+    },
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/SimpleStorage.sol": {
       "lastModificationDate": 1772600898256,
       "contentHash": "8f07de10a6b06dc38c29d39b2d97bf65",
       "sourceName": "src/SimpleStorage.sol",
@@ -2158,14 +2752,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -2178,7 +2783,7 @@
         "SimpleStorage"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\SimpleVesting.sol": {
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/templates/SimpleVesting.sol": {
       "lastModificationDate": 1772600898259,
       "contentHash": "5a73de8ceb43bb7dc09531381109e97f",
       "sourceName": "src/templates/SimpleVesting.sol",
@@ -2195,14 +2800,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }
@@ -2215,8 +2831,8 @@
         "SimpleVesting"
       ]
     },
-    "D:\\venera\\polkadot\\hackathon\\moderntensor_polkadot\\luxtensor\\contracts\\src\\templates\\TokenVesting.sol": {
-      "lastModificationDate": 1772603309871,
+    "/media/son/Projects1/venera/polkadot/hackathon/moderntensor_polkadot/luxtensor/contracts/src/templates/TokenVesting.sol": {
+      "lastModificationDate": 1772606143135,
       "contentHash": "9aa19a8e2a17541635fea89bb8f0195c",
       "sourceName": "src/templates/TokenVesting.sol",
       "solcConfig": {
@@ -2232,14 +2848,25 @@
             "*": {
               "*": [
                 "abi",
+                "metadata",
                 "evm.bytecode",
                 "evm.deployedBytecode",
                 "evm.methodIdentifiers",
-                "metadata"
+                "storageLayout"
               ],
               "": [
                 "ast"
               ]
+            }
+          },
+          "resolc": {
+            "version": "0.6.0",
+            "compilerSource": "binary",
+            "settings": {
+              "optimizer": {
+                "enabled": true,
+                "runs": 200
+              }
             }
           }
         }

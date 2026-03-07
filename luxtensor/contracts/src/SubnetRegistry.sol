@@ -653,7 +653,6 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             sn.emissionShare) / totalEmissionShares;
 
         // [SECURITY] Cap emission to actual contract token balance
-        // Prevents accruing unbacked emission IOUs
         uint256 contractBalance = token.balanceOf(address(this));
         if (totalEmission > contractBalance) {
             totalEmission = contractBalance;
@@ -664,17 +663,34 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             return;
         }
 
-        // ───────────────────────────────────────────────────
-        // Step 1: Aggregate QUADRATIC stake-weighted scores
-        //         with TRUST multiplier
-        // ───────────────────────────────────────────────────
+        // Step 1: Compute quadratic stake-weighted scores
         uint256[] memory scores = new uint256[](sn.nextUid);
-        uint256 totalScore = 0;
+        uint256 totalScore = _computeScores(netuid, sn.nextUid, scores);
 
-        // Track per-validator weight sums for trust calculation later
-        uint256[] memory validatorContributions = new uint256[](sn.nextUid);
+        // Step 2: Distribute 82% emission to miners
+        _distributeMinerEmissions(netuid, sn.nextUid, totalEmission, scores, totalScore);
 
-        for (uint16 v = 0; v < sn.nextUid; v++) {
+        // Step 3: Distribute 18% emission to validators
+        _distributeValidatorEmissions(netuid, sn.nextUid, totalEmission);
+
+        // Step 4: Update trust scores
+        if (totalScore > 0) {
+            _updateTrustScores(netuid, sn.nextUid, scores, totalScore);
+        }
+
+        sn.lastEpochBlock = block.number;
+        emit EpochCompleted(netuid, block.number, totalEmission);
+    }
+
+    /**
+     * @dev Step 1: Aggregate QUADRATIC stake-weighted scores with TRUST multiplier
+     */
+    function _computeScores(
+        uint256 netuid,
+        uint256 maxUid,
+        uint256[] memory scores
+    ) internal view returns (uint256 totalScore) {
+        for (uint16 v = 0; v < maxUid; v++) {
             Node storage validator = nodes[netuid][v];
             if (!validator.active || validator.nodeType != NodeType.VALIDATOR)
                 continue;
@@ -682,17 +698,11 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             uint256 totalStake = validator.stake + validator.delegatedStake;
             if (totalStake == 0) continue;
 
-            // [QUADRATIC VOTING] Use sqrt(stake) instead of raw stake
             uint256 votingPower = sqrt(totalStake);
-
-            // [TRUST MULTIPLIER] High-trust validators get up to 1.5x weight
-            // trust is stored as 0 - 1e18, scale to multiplier
             uint256 trustMultiplier = TRUST_MULTIPLIER_BASE +
                 (validator.trust *
                     (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) /
                 1e18;
-
-            // Apply trust multiplier to voting power
             uint256 effectivePower = (votingPower * trustMultiplier) /
                 TRUST_MULTIPLIER_BASE;
 
@@ -703,157 +713,144 @@ contract SubnetRegistry is Ownable, ReentrancyGuard {
             }
             if (weightSum == 0) continue;
 
-            // Add trust-weighted quadratic contribution
-            uint256 validatorTotalContrib = 0;
             for (uint256 i = 0; i < w.length; i++) {
                 uint256 contribution = (effectivePower * uint256(w[i].weight)) /
                     weightSum;
                 scores[w[i].uid] += contribution;
                 totalScore += contribution;
-                validatorTotalContrib += contribution;
-            }
-            validatorContributions[v] = validatorTotalContrib;
-        }
-
-        // ───────────────────────────────────────────────────
-        // Step 2: Distribute 82% emission proportional to scores (miners)
-        // ───────────────────────────────────────────────────
-        uint256 minerShare = (totalEmission * 8200) / 10000; // 82%
-        if (totalScore > 0) {
-            for (uint16 uid = 0; uid < sn.nextUid; uid++) {
-                if (scores[uid] > 0 && nodes[netuid][uid].active) {
-                    uint256 nodeEmission = (minerShare * scores[uid]) /
-                        totalScore;
-                    nodes[netuid][uid].emission += nodeEmission;
-                    nodes[netuid][uid].rank = (scores[uid] * 1e18) / totalScore;
-                    nodes[netuid][uid].incentive += nodeEmission;
-                }
             }
         }
+    }
 
-        // ───────────────────────────────────────────────────
-        // Step 3: Distribute 18% to validators weighted by
-        //         STAKE × TRUST (not pure stake — rewards consensus alignment)
-        // ───────────────────────────────────────────────────
-        uint256 validatorShareTotal = (totalEmission * 1800) / 10000; // 18%
-        uint256 totalEffectiveValidatorStake = 0;
+    /**
+     * @dev Step 2: Distribute 82% emission proportional to scores (miners)
+     */
+    function _distributeMinerEmissions(
+        uint256 netuid,
+        uint256 maxUid,
+        uint256 totalEmission,
+        uint256[] memory scores,
+        uint256 totalScore
+    ) internal {
+        uint256 minerShare = (totalEmission * 8200) / 10000;
+        if (totalScore == 0) return;
+        for (uint16 uid = 0; uid < maxUid; uid++) {
+            if (scores[uid] > 0 && nodes[netuid][uid].active) {
+                uint256 nodeEmission = (minerShare * scores[uid]) / totalScore;
+                nodes[netuid][uid].emission += nodeEmission;
+                nodes[netuid][uid].rank = (scores[uid] * 1e18) / totalScore;
+                nodes[netuid][uid].incentive += nodeEmission;
+            }
+        }
+    }
 
-        // First pass: compute total effective stake (stake × trust multiplier)
-        for (uint16 v = 0; v < sn.nextUid; v++) {
+    /**
+     * @dev Step 3: Distribute 18% to validators weighted by STAKE × TRUST
+     */
+    function _distributeValidatorEmissions(
+        uint256 netuid,
+        uint256 maxUid,
+        uint256 totalEmission
+    ) internal {
+        uint256 validatorShareTotal = (totalEmission * 1800) / 10000;
+        uint256 totalEffective = 0;
+
+        for (uint16 v = 0; v < maxUid; v++) {
             Node storage validator = nodes[netuid][v];
             if (validator.active && validator.nodeType == NodeType.VALIDATOR) {
-                uint256 vStake = validator.stake + validator.delegatedStake;
-                // [CONSENSUS SCORING] Trust-weighted effective stake
-                // Low-trust validators earn proportionally less emission
-                uint256 trustFactor = TRUST_MULTIPLIER_BASE +
-                    (validator.trust *
-                        (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) /
-                    1e18;
-                uint256 effectiveStake = (vStake * trustFactor) /
-                    TRUST_MULTIPLIER_BASE;
-                totalEffectiveValidatorStake += effectiveStake;
+                totalEffective += _effectiveStake(validator);
             }
         }
 
-        // Second pass: distribute proportionally to effective stake
-        if (totalEffectiveValidatorStake > 0) {
-            for (uint16 v = 0; v < sn.nextUid; v++) {
-                Node storage validator = nodes[netuid][v];
-                if (
-                    validator.active && validator.nodeType == NodeType.VALIDATOR
-                ) {
-                    uint256 vStake = validator.stake + validator.delegatedStake;
-                    uint256 trustFactor = TRUST_MULTIPLIER_BASE +
-                        (validator.trust *
-                            (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) /
-                        1e18;
-                    uint256 effectiveStake = (vStake * trustFactor) /
-                        TRUST_MULTIPLIER_BASE;
-                    uint256 perValidator = (validatorShareTotal *
-                        effectiveStake) / totalEffectiveValidatorStake;
-                    validator.emission += perValidator;
-                }
+        if (totalEffective == 0) return;
+
+        for (uint16 v = 0; v < maxUid; v++) {
+            Node storage validator = nodes[netuid][v];
+            if (validator.active && validator.nodeType == NodeType.VALIDATOR) {
+                uint256 es = _effectiveStake(validator);
+                validator.emission += (validatorShareTotal * es) / totalEffective;
             }
         }
+    }
 
-        // ───────────────────────────────────────────────────
-        // Step 4: Update TRUST scores
-        //         Trust = how well validator's weights align with consensus
-        // ───────────────────────────────────────────────────
-        if (totalScore > 0) {
-            for (uint16 v = 0; v < sn.nextUid; v++) {
-                Node storage validator = nodes[netuid][v];
-                if (
-                    !validator.active ||
-                    validator.nodeType != NodeType.VALIDATOR
-                ) continue;
+    /**
+     * @dev Calculate trust-weighted effective stake for a validator
+     */
+    function _effectiveStake(Node storage validator) internal view returns (uint256) {
+        uint256 vStake = validator.stake + validator.delegatedStake;
+        uint256 trustFactor = TRUST_MULTIPLIER_BASE +
+            (validator.trust * (TRUST_MULTIPLIER_MAX - TRUST_MULTIPLIER_BASE)) /
+            1e18;
+        return (vStake * trustFactor) / TRUST_MULTIPLIER_BASE;
+    }
 
-                WeightEntry[] storage w = _weights[netuid][v];
-                if (w.length == 0) {
-                    // No weights set → decrease trust
-                    validator.trust = (validator.trust * 95) / 100; // -5%
-                    emit TrustUpdated(netuid, v, validator.trust);
-                    emit ValidatorScored(
-                        netuid,
-                        v,
-                        validator.trust,
-                        validator.emission,
-                        0
-                    );
-                    continue;
-                }
+    /**
+     * @dev Step 4: Update TRUST scores based on consensus alignment
+     */
+    function _updateTrustScores(
+        uint256 netuid,
+        uint256 maxUid,
+        uint256[] memory scores,
+        uint256 totalScore
+    ) internal {
+        for (uint16 v = 0; v < maxUid; v++) {
+            _updateSingleTrust(netuid, v, scores, totalScore);
+        }
+    }
 
-                // Calculate alignment: how well this validator's distribution
-                // matches the consensus distribution
-                uint256 weightSum = 0;
-                for (uint256 i = 0; i < w.length; i++) {
-                    weightSum += w[i].weight;
-                }
+    /**
+     * @dev Update trust for a single validator
+     */
+    function _updateSingleTrust(
+        uint256 netuid,
+        uint16 v,
+        uint256[] memory scores,
+        uint256 totalScore
+    ) internal {
+        Node storage validator = nodes[netuid][v];
+        if (!validator.active || validator.nodeType != NodeType.VALIDATOR)
+            return;
 
-                uint256 alignmentScore = 0;
-                uint256 maxAlignment = 0;
-
-                for (uint256 i = 0; i < w.length; i++) {
-                    // Validator's normalized weight for this miner
-                    uint256 valWeight = (uint256(w[i].weight) * 1e18) /
-                        weightSum;
-                    // Consensus normalized score for this miner
-                    uint256 consensusWeight = (scores[w[i].uid] * 1e18) /
-                        totalScore;
-
-                    // Alignment = min(valWeight, consensusWeight)
-                    // (measures overlap between validator's view and consensus)
-                    if (valWeight <= consensusWeight) {
-                        alignmentScore += valWeight;
-                    } else {
-                        alignmentScore += consensusWeight;
-                    }
-                    maxAlignment += valWeight;
-                }
-
-                // Trust = EMA(old_trust, alignment)
-                // 70% old trust + 30% new alignment
-                uint256 newAlignment = maxAlignment > 0
-                    ? (alignmentScore * 1e18) / maxAlignment
-                    : 0;
-                validator.trust =
-                    (validator.trust * 70 + newAlignment * 30) /
-                    100;
-
-                emit TrustUpdated(netuid, v, validator.trust);
-                emit ValidatorScored(
-                    netuid,
-                    v,
-                    validator.trust,
-                    validator.emission,
-                    newAlignment
-                );
-            }
+        WeightEntry[] storage w = _weights[netuid][v];
+        if (w.length == 0) {
+            validator.trust = (validator.trust * 95) / 100;
+            emit TrustUpdated(netuid, v, validator.trust);
+            emit ValidatorScored(netuid, v, validator.trust, validator.emission, 0);
+            return;
         }
 
-        sn.lastEpochBlock = block.number;
+        uint256 newAlignment = _computeAlignment(w, scores, totalScore);
+        validator.trust = (validator.trust * 70 + newAlignment * 30) / 100;
 
-        emit EpochCompleted(netuid, block.number, totalEmission);
+        emit TrustUpdated(netuid, v, validator.trust);
+        emit ValidatorScored(netuid, v, validator.trust, validator.emission, newAlignment);
+    }
+
+    /**
+     * @dev Compute alignment between validator weights and consensus scores
+     */
+    function _computeAlignment(
+        WeightEntry[] storage w,
+        uint256[] memory scores,
+        uint256 totalScore
+    ) internal view returns (uint256) {
+        uint256 weightSum;
+        uint256 len = w.length;
+        for (uint256 i = 0; i < len; i++) {
+            weightSum += w[i].weight;
+        }
+
+        uint256 alignmentScore;
+        uint256 maxAlignment;
+
+        for (uint256 i = 0; i < len; i++) {
+            uint256 valW = (uint256(w[i].weight) * 1e18) / weightSum;
+            uint256 consW = (scores[w[i].uid] * 1e18) / totalScore;
+            alignmentScore += valW < consW ? valW : consW;
+            maxAlignment += valW;
+        }
+
+        return maxAlignment > 0 ? (alignmentScore * 1e18) / maxAlignment : 0;
     }
 
     /**
