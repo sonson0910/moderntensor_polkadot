@@ -1,31 +1,15 @@
 {
-  "project": "ModernTensor",
-  "description": "Decentralized AI Quality Protocol on Polkadot Hub",
-  "network": "localhost",
-  "rpcUrl": "http://127.0.0.1:8545",
-  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "timestamp": "2026-03-06T06:23:18.593Z",
-  "deploymentTime": "0.2s",
+  "network": "polkadot_hub_testnet",
+  "chainId": "420420417",
+  "rpc": "https://services.polkadothub-rpc.com/testnet",
+  "deployer": "0x54C375b935344fC3c16E5e83F444DB54dE0E6eB9",
+  "timestamp": "2026-03-08T02:14:59.533Z",
   "contracts": {
-    "MDTToken": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "MDTVesting": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "MDTStaking": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-    "ZkMLVerifier": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-    "AIOracle": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-    "SubnetRegistry": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
-    "GradientAggregator": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
-    "TrainingEscrow": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
-  },
-  "models": {
-    "moderntensor-code-review-v1": "0x3302fe2f707ecdf19a814b52ab628a015ea8dda38d29573cabfbd67fd81ea99e",
-    "moderntensor-ai-scoring-v1": "0x6fcaacafb814cb7089ab214d2d2e99f9e8c21a85c214895a33239d9b32cef6c9",
-    "demo-federated-learning-v1": "0xcd3bc5e0667e0fbea9d1045f41d87fe09cea96c8ae621c736b84bc84126b5c48"
-  },
-  "hackathon": {
-    "name": "Polkadot Solidity Hackathon 2026",
-    "track": "Track 1: EVM Smart Contract — AI-powered dApps",
-    "organizer": "OpenGuild",
-    "platform": "DoraHacks",
-    "submission_deadline": "2026-03-20"
+    "MDTToken": "0x5aC2455272378Be57d985a156C638f0E35EE61f4",
+    "MDTVesting": "0x482ec97FBc840bFD10bA37eA76aFD285394B5A66",
+    "MDTStaking": "0x8c4E7D144783315E8783aE7c562fB19dD4Ad22F8",
+    "ZkMLVerifier": "0x8C46Cc7d759AAB0158770bfD8c8BB4681ae03696",
+    "AIOracle": "0x0699A9a79f9007C523bB8AceB80870aB6cbdd052",
+    "SubnetRegistry": "0xE11F3F86B69578cAF3Db5Be80111B8484c8B6115"
   }
 }

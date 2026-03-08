@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-03-08T05:25:50.316Z",
+  "network": "polkadot_hub_testnet",
+  "netuid": 1,
+  "wallets": {
+    "deployer": "0x54C375b935344fC3c16E5e83F444DB54dE0E6eB9",
+    "minerColdkey": "0xA046eFA0478796E4AB53213f77aCa3a1812C952F",
+    "minerColdkeyPK": "0x54b130b4deb51088bb5939f67350387b408ae78cedb2f292b8b766bf1ad0e1fe",
+    "validatorColdkey": "0xcBd603Bd3E9ceca66Bca841653C78dD833F5dFF8",
+    "validatorColdkeyPK": "0x1ce99ba376097c5be27b8d29935c6987ba0eea4f50c3669226b0ab8194dcf065"
+  },
+  "nodes": {
+    "miner1": {
+      "hotkey": "0x526CE1A01e839969A7404cfc577Ee37D3e89D4B9",
+      "uid": 0
+    },
+    "miner2": {
+      "hotkey": "0x3B67D5d2C7F399B3fe997537A4688Ce5C17C24F2",
+      "uid": 1
+    },
+    "validator1": {
+      "hotkey": "0x29D1f30b713Ed30B477A0AA903EF9fA10B611C08",
+      "uid": 2
+    },
+    "validator2": {
+      "hotkey": "0xaFA853c8c2Db78e2037404D003B05d49b158E4Cd",
+      "uid": 3
+    },
+    "validator3": {
+      "hotkey": "0x0eC02D6452055964c4f43e59F3fb19BF5FcdC9e3",
+      "uid": 4
+    }
+  }
+}

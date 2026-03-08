@@ -36,8 +36,8 @@ from .orchestrator import AISubnetOrchestrator
 
 logger = logging.getLogger(__name__)
 
-# Safety cap to prevent runaway gas costs
-MAX_GAS_LIMIT = 5_000_000
+# Safety cap — increased for pallet-revive (Polkadot Hub)
+MAX_GAS_LIMIT = 30_000_000
 
 
 class PolkadotClient:
@@ -274,15 +274,9 @@ class PolkadotClient:
                     else:
                         tx_copy["gas"] = min(tx_copy["gas"], MAX_GAS_LIMIT)
 
-                # Use EIP-1559 fields for compatibility with modern nodes
+                # Pallet-revive requires gasPrice (not EIP-1559)
                 if "maxFeePerGas" not in tx_copy and "gasPrice" not in tx_copy:
-                    try:
-                        base_fee = self.w3.eth.get_block("latest").get("baseFeePerGas", 0)
-                        priority_fee = self.w3.eth.max_priority_fee
-                        tx_copy["maxPriorityFeePerGas"] = priority_fee
-                        tx_copy["maxFeePerGas"] = base_fee * 2 + priority_fee
-                    except Exception:
-                        tx_copy["gasPrice"] = self.w3.eth.gas_price
+                    tx_copy["gasPrice"] = self.w3.eth.gas_price
 
                 # Sign and send
                 signed = self._account.sign_transaction(tx_copy)
