@@ -1,0 +1,56 @@
+{
+    "network": {
+        "rpc_url": "https://services.polkadothub-rpc.com/testnet",
+        "chain_id": 420420417,
+        "name": "Polkadot Hub Testnet"
+    },
+    "subnet": {
+        "netuid": 1,
+        "name": "ModernTensor AI",
+        "max_nodes": 100,
+        "tempo": 1,
+        "emission_share": 1000
+    },
+    "deployment_file": "luxtensor/contracts/deployments-polkadot.json",
+    "wallets": {
+        "deployer": {
+            "key": "0x2191a9482334c6dcd94d58e5a0d929037c77b990d8a259fbb009a9812305da72",
+            "address": "0x54C375b935344fC3c16E5e83F444DB54dE0E6eB9"
+        },
+        "miner_coldkey": {
+            "key": "029ce448008f787f923854b97aa44f6378a847145765225769affa2f1e0ecf19",
+            "address": "0x71c7Fc6D30bf42B5A3d9E5cD86Fc755D814fc920"
+        },
+        "validator_coldkey": {
+            "key": "63b3fa8390aee969314f3350d6d15a1ab874360fd528998e24fa575e121d4aa6",
+            "address": "0xA4bdDF60C57191CAEc346f69aE62889656bbC59d"
+        }
+    },
+    "nodes": {
+        "miner1": {
+            "hotkey": "0xBf98Cd6959753E35335147fB54097BD5606080cD",
+            "uid": 5
+        },
+        "miner2": {
+            "hotkey": "0xe8b23aDe1CD68af43339445b1D620acf730C3725",
+            "uid": 6
+        },
+        "validator1": {
+            "hotkey": "0xa3b39b3f9BeC4bF5caDa3cc04Dbb01231a311Be2",
+            "uid": 7
+        },
+        "validator2": {
+            "hotkey": "0xcBf1dE7387Ed66EBd90f71330CA8FE34076863dC",
+            "uid": 8
+        },
+        "validator3": {
+            "hotkey": "0x0ddF55a34A4997B0D953E482a3fA3Ee663619D5F",
+            "uid": 9
+        }
+    },
+    "timing": {
+        "miner_poll_interval": 3,
+        "validator_poll_interval": 8,
+        "miner_timeout": 30
+    }
+}
