@@ -6,7 +6,7 @@
 
 📄 **[Read the full Whitepaper (Vietnamese)](MODERNTENSOR_WHITEPAPER_VI.md)** | **[English Whitepaper](WHITEPAPER.md)**
 
-![moderntensor.png](https://github.com/sonson0910/moderntensor/blob/main/moderntensor.png)
+![moderntensor.png](./moderntensor.png)
 
 ---
 
@@ -106,6 +106,14 @@ cat deployments-polkadot.json
 
 ## 📋 Features
 
+### 🖥️ Web Frontend (Cyberpunk Dashboard)
+
+- **Subnets Hub** — BIOS boot animation, live network stats (Total Subnets, Active Nodes, Emissions)
+- **Subnet Detail + Metagraph** — Interactive node table with UID, Stake, Trust, Incentive, 24h performance; filter Miners/Validators
+- **Validators** — Trust scores, staking amounts, validation activity
+- **Tokenomics + Yield Simulator** — Token distribution chart, interactive APY calculator with sliders
+- **Tech:** Next.js 15 + React 19 + Tailwind CSS, glassmorphism UI, real-time on-chain data
+
 ### Smart Contracts (Solidity 0.8.28)
 
 - **MDT Token** — ERC20 with category-based minting (Emission 45%, Ecosystem 12%, Team 10%, etc.), burnable, permit
@@ -120,7 +128,7 @@ cat deployments-polkadot.json
 
 - **LuxtensorClient** — Comprehensive RPC client (sync + async)
 - **AI/ML Framework** — Agent system, scoring, subnet management, zkML integration
-- **Consensus Module** — PoS, slashing, fork choice, fast finality
+- **Polkadot Integration** — On-chain subnet management, staking, IPFS storage, oracle, training orchestration
 - **CLI (`mtcli`)** — Wallet management, staking, queries, transactions
 - **Security** — Authentication, rate limiting, IP filtering, DDoS protection
 
@@ -143,7 +151,15 @@ cat deployments-polkadot.json
 ## 🏗️ Project Structure
 
 ```
-moderntensor/
+moderntensor_polkadot/
+├── web/                     # 🖥️ Web Frontend (Next.js 15 + React 19)
+│   ├── app/                 # App Router pages
+│   │   ├── page.tsx         # Subnets Hub (landing)
+│   │   ├── subnet/[id]/     # Subnet Detail + Metagraph
+│   │   ├── validators/      # Validators page
+│   │   └── tokenomics/      # Tokenomics + Yield Simulator
+│   ├── components/          # React components
+│   └── package.json
 ├── luxtensor/
 │   └── contracts/           # Solidity smart contracts
 │       ├── src/             # Contract source files (19 contracts)
@@ -151,16 +167,19 @@ moderntensor/
 │       ├── artifacts/       # Compiled contract ABIs
 │       ├── hardhat.config.js
 │       └── package.json
-├── sdk/                     # Python SDK (162 files)
-│   ├── ai_ml/              # AI/ML framework
-│   ├── consensus/           # PoS consensus
+├── sdk/                     # Python SDK
+│   ├── ai_ml/              # AI/ML framework & scoring
 │   ├── cli/                # CLI tool (mtcli)
-│   ├── client/             # RPC client mixins
+│   ├── contracts/          # Smart contract ABIs & wrappers
+│   ├── core/               # Core protocol logic
+│   ├── keymanager/         # Wallet & key management
+│   ├── polkadot/           # Polkadot Hub integration
 │   ├── security/           # Security module
-│   └── tokenomics/         # Token economics
-├── tests/                   # Test suite (27 test files)
+│   ├── tokenomics/         # Token economics
+│   └── utils/              # Shared utilities
+├── subnet/                  # Subnet demo (miner + validator)
+├── demo/                    # Step-by-step demo scripts
 ├── docs/                    # Documentation
-├── docker/                  # Docker configurations
 └── README.md
 ```
 
@@ -204,19 +223,75 @@ mtcli wallet list
 
 ---
 
+## 🎬 Demo Video (~5 minutes)
+
+### 📹 How to Record
+
+**Preparation:**
+
+```bash
+# 1. Clean task queue
+rm -f subnet/task_queue/*.json
+
+# 2. Start web frontend
+cd web && npm run dev          # → http://localhost:3000
+
+# 3. Prepare 2 terminal tabs (split screen) + browser with 4 tabs:
+#    Tab 1: http://localhost:3000              (Subnets Hub)
+#    Tab 2: http://localhost:3000/subnet/1     (Subnet Detail + Metagraph)
+#    Tab 3: http://localhost:3000/tokenomics   (Yield Simulator)
+#    Tab 4: Blockscout explorer                (SubnetRegistry contract)
+```
+
+**Scene-by-scene (9 scenes):**
+
+| # | Time | Content | What to Show |
+|---|------|---------|-------------|
+| 1 | 0:00–0:40 | 🎯 Hook + Subnets Hub | Browser — BIOS animation → dashboard stats |
+| 2 | 0:40–1:20 | 🧠 Subnet Detail | Click Subnet 1 → Metagraph table (11 nodes) |
+| 3 | 1:20–1:50 | ✅ Validators | Navigate to Validators page |
+| 4 | 1:50–2:20 | 💎 Tokenomics | Yield Simulator — drag sliders |
+| 5 | 2:20–2:50 | 🌐 Blockscout | Show deployed contracts on explorer |
+| 6 | 2:50–3:10 | ⛏️ Start Miner | Terminal: `python subnet/miner1.py` |
+| 7 | 3:10–4:20 | 🔷 Validator Loop ⭐ | Terminal: `python subnet/validator1.py` → full epoch |
+| 8 | 4:20–4:45 | 🔍 Verify | Blockscout TX + web frontend refresh |
+| 9 | 4:45–5:10 | 🎯 Closing | Summary from Subnets Hub |
+
+> 💡 Full narration script with voiceover text: **[DEMO_NARRATION_SCRIPT.py](DEMO_NARRATION_SCRIPT.py)**
+
+### Running the Subnet Demo (Without Video)
+
+```bash
+# Terminal 1 — Miner
+python subnet/miner1.py
+
+# Terminal 2 — Validator
+python subnet/validator1.py
+
+# Full automated demo
+cd demo && python 07_run_demo.py
+```
+
+See **[Demo Guide](demo/README.md)** for step-by-step instructions and **[Subnet Guide](subnet/README.md)** for running individual miners/validators.
+
+---
+
 ## 📚 Documentation
 
 * **[ModernTensor Whitepaper (Vietnamese)](MODERNTENSOR_WHITEPAPER_VI.md)** — Complete project whitepaper
 * **[Whitepaper (English)](WHITEPAPER.md)** — English version
-* **[Tokenomics](docs/TOKENOMICS.md)** — Token distribution and economics
+* **[How It Works (Vietnamese)](docs/HOW_IT_WORKS_VI.md)** — Technical deep-dive
+* **[Non-Technical Overview (Vietnamese)](docs/NON_TECH_OVERVIEW_VI.md)** — For non-technical audience
 * **[Pitch Deck](docs/PITCH_DECK.md)** — Project overview presentation
-* **[Changelog](CHANGELOG.md)** — Version history
+* **[Tokenomics](docs/TOKENOMICS.md)** — Token distribution and economics
+* **[Roadmap](docs/ROADMAP.md)** — Development roadmap
+* **[Security](SECURITY.md)** — Security model and policies
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions!
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)

@@ -1,0 +1,11 @@
+{
+  "task_id": "09495f0a",
+  "domain": "Finance",
+  "domain_name": "Financial Analysis",
+  "task_name": "Risk Assessment",
+  "input": "Cross-chain LP: 3 positions across parachains, TVL $120k. CalculateIL risk.",
+  "validator_uid": 8,
+  "created_at": "2026-03-17T18:56:51.271031",
+  "status": "pending",
+  "result": null
+}

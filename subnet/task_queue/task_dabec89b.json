@@ -1,0 +1,32 @@
+{
+  "task_id": "dabec89b",
+  "domain": "NLP",
+  "domain_name": "Natural Language Processing",
+  "task_name": "Sentiment Analysis",
+  "input": "ModernTensor brings decentralized AI inference to the Polkadot ecosystem through zkML proofs.",
+  "validator_uid": 7,
+  "created_at": "2026-03-17T18:27:19.382962",
+  "status": "completed",
+  "result": {
+    "miner_uid": 6,
+    "model_name": "ModernBERT-Sentiment-v3",
+    "output": "Sentiment: POSITIVE (0.98)",
+    "confidence": 0.9275396291088358,
+    "compute_time": 1.8925982381343203,
+    "proof": "3e77b433ce7e093e07c6f3ba147bc6398cab51d8980477117455e9a7c1b26c50",
+    "details": {
+      "key_phrases": [
+        "decentralized",
+        "trust",
+        "Polkadot"
+      ],
+      "emotional_tone": "Neutral",
+      "domain_tags": [
+        "technology",
+        "web3",
+        "AI"
+      ]
+    },
+    "timestamp": "2026-03-17T18:27:21.421868"
+  }
+}

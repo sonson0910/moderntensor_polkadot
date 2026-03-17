@@ -37,6 +37,26 @@ CHAIN_ID     = CFG["network"]["chain_id"]
 NETUID       = CFG["subnet"]["netuid"]
 DEPLOYMENT   = str(PROJECT_ROOT / CFG["deployment_file"])
 
+# ═══════════════════════════════════════════════════════════
+# Blockscout Explorer
+# ═══════════════════════════════════════════════════════════
+EXPLORER_URL = "https://blockscout-testnet.polkadot.io"
+
+
+def _ensure_0x(h: str) -> str:
+    """Ensure a hex string has 0x prefix."""
+    return h if h.startswith("0x") else f"0x{h}"
+
+
+def tx_link(tx_hash: str) -> str:
+    """Return full Blockscout explorer URL for a transaction hash."""
+    return f"{EXPLORER_URL}/tx/{_ensure_0x(tx_hash)}"
+
+
+def addr_link(address: str) -> str:
+    """Return full Blockscout explorer URL for an address."""
+    return f"{EXPLORER_URL}/address/{_ensure_0x(address)}"
+
 
 def get_client(wallet_key_name: str):
     """Create a PolkadotClient from a wallet key name in config."""
@@ -56,40 +76,29 @@ def get_deployer():
 
 
 def log(emoji, msg, **kw):
-    """Pretty log with timestamp."""
-    ts = datetime.now().strftime("%H:%M:%S")
-    extra = " | ".join(f"{k}={v}" for k, v in kw.items()) if kw else ""
-    print(f"  [{ts}] {emoji} {msg}" + (f"  ({extra})" if extra else ""))
+    """Pretty log with timestamp (themed via Rich)."""
+    from sdk.cli.ui import print_log
+    print_log(emoji, msg, **kw)
 
 
 def show_metagraph(client, netuid=None):
-    """Display the full subnet metagraph table."""
+    """Display the full subnet metagraph table (themed via Rich)."""
+    from sdk.cli.ui import print_metagraph_table
+
     netuid = netuid or NETUID
     try:
         meta = client.subnet.get_metagraph(netuid)
         sn = client.subnet.get_subnet(netuid)
-
-        print(f"\n  ╭── Metagraph: {sn.name} (netuid={netuid}) @ block {client.block_number} ───╮")
-        print(f"  │ {'UID':<5} {'Type':<11} {'Stake':<12} {'Trust':<10} {'Rank':<12} {'Emission':<14} │")
-        print(f"  │ {'─'*5} {'─'*11} {'─'*12} {'─'*10} {'─'*12} {'─'*14} │")
-
-        for node in meta.nodes:
-            if not node.active:
-                continue
-            ntype = "VALIDATOR" if node.is_validator else "MINER"
-            emoji_n = "🔷" if node.is_validator else "⛏️"
-            print(
-                f"  │ {emoji_n}{node.uid:<4} {ntype:<11} "
-                f"{node.total_stake_ether:<12.2f} "
-                f"{node.trust_float:<10.4f} "
-                f"{node.rank_float:<12.6f} "
-                f"{node.emission_ether:<14.6f} │"
-            )
-
         total = float(Web3.from_wei(meta.total_stake, "ether"))
-        print(f"  │{'─'*74}│")
-        print(f"  │ Total Stake: {total:.2f} MDT | Miners: {len(meta.miners)} | Validators: {len(meta.validators)}")
-        print(f"  ╰{'─'*74}╯\n")
+
+        print_metagraph_table(
+            nodes=meta.nodes,
+            total_stake=f"{total:.2f}",
+            n_miners=len(meta.miners),
+            n_validators=len(meta.validators),
+            title=f"Metagraph: {sn.name} (netuid={netuid})",
+            block=client.block_number,
+        )
     except Exception as e:
         log("⚠️", f"Metagraph error: {str(e)[:60]}")
 

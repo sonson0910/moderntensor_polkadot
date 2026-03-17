@@ -22,6 +22,12 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from eth_account import Account
 from web3 import Web3
+from rich.table import Table
+
+from sdk.cli.ui import (
+    console, print_banner, print_error, print_divider,
+    print_status_box, print_success, print_info,
+)
 
 CONFIG_FILE = SUBNET_DIR / "config.json"
 with open(CONFIG_FILE) as f:
@@ -38,7 +44,8 @@ GAS_PER_KEY = 5       # PAS
 def log(emoji, msg, **kw):
     ts = datetime.now().strftime("%H:%M:%S")
     extra = " | ".join(f"{k}={v}" for k, v in kw.items()) if kw else ""
-    print(f"  [{ts}] {emoji} {msg}" + (f"  ({extra})" if extra else ""))
+    suffix = f"  [dim]({extra})[/dim]" if extra else ""
+    console.print(f"  [dim][{ts}][/dim] {emoji} {msg}{suffix}")
 
 
 def send_pas(deployer_client, to_addr, amount_ether, deployer_key):
@@ -64,11 +71,11 @@ def send_pas(deployer_client, to_addr, amount_ether, deployer_key):
 def main():
     from sdk.polkadot.client import PolkadotClient
 
-    print()
-    print("╔" + "═" * 62 + "╗")
-    print("║  🛠️   ModernTensor — Fresh Subnet Setup                        ║")
-    print("║  2 Miners + 3 Validators on Polkadot Hub Testnet               ║")
-    print("╚" + "═" * 62 + "╝")
+    print_banner(
+        title="ModernTensor — Fresh Subnet Setup",
+        subtitle="2 Miners + 3 Validators on Polkadot Hub Testnet",
+        icon="🛠️",
+    )
 
     # ── Connect deployer ─────────────────────────────────────
     deployer_key = CFG["wallets"]["deployer"]["key"]
@@ -76,7 +83,7 @@ def main():
         rpc_url=RPC_URL, private_key=deployer_key, deployment_path=DEPLOYMENT,
     )
     if not deployer.is_connected:
-        print("  ❌ Cannot connect"); sys.exit(1)
+        print_error("Cannot connect"); sys.exit(1)
     log("🌐", f"Connected", block=deployer.block_number)
 
     deployer_addr = deployer.address
@@ -88,7 +95,7 @@ def main():
     # ═══════════════════════════════════════════════════════════
     # Step 1: Generate 2 coldkeys + 5 hotkeys
     # ═══════════════════════════════════════════════════════════
-    print(f"\n  ═══ Step 1/5: Generate Keys {'═' * 33}")
+    print_divider("Step 1/5: Generate Keys")
 
     miner_coldkey = Account.create()
     validator_coldkey = Account.create()
@@ -106,7 +113,7 @@ def main():
     # ═══════════════════════════════════════════════════════════
     # Step 2: Fund coldkeys with PAS (native gas)
     # ═══════════════════════════════════════════════════════════
-    print(f"\n  ═══ Step 2/5: Fund PAS (Gas) {'═' * 33}")
+    print_divider("Step 2/5: Fund PAS (Gas)")
     for name, addr in [("miner_coldkey", miner_coldkey.address),
                         ("validator_coldkey", validator_coldkey.address)]:
         log("💸", f"Sending {GAS_PER_KEY} PAS to {name}")
@@ -114,13 +121,13 @@ def main():
             tx = send_pas(deployer, addr, GAS_PER_KEY, deployer_key)
             log("✅", f"Funded {name}", tx=tx[:16] + "...")
         except Exception as e:
-            log("❌", f"PAS funding failed: {e}"); sys.exit(1)
+            print_error(f"PAS funding failed: {e}"); sys.exit(1)
         time.sleep(2)
 
     # ═══════════════════════════════════════════════════════════
     # Step 3: Fund coldkeys with MDT (staking tokens)
     # ═══════════════════════════════════════════════════════════
-    print(f"\n  ═══ Step 3/5: Fund MDT (Stake) {'═' * 31}")
+    print_divider("Step 3/5: Fund MDT (Stake)")
     # Miner coldkey needs 200 MDT (2 miners × 100), validator needs 300 MDT (3 × 100)
     for name, addr, amount in [("miner_coldkey", miner_coldkey.address, 200),
                                 ("validator_coldkey", validator_coldkey.address, 300)]:
@@ -129,13 +136,13 @@ def main():
             tx = deployer.token.transfer(addr, Web3.to_wei(amount, "ether"))
             log("✅", f"Funded {amount} MDT", tx=tx[:16] + "...")
         except Exception as e:
-            log("❌", f"MDT funding failed: {e}"); sys.exit(1)
+            print_error(f"MDT funding failed: {e}"); sys.exit(1)
         time.sleep(2)
 
     # ═══════════════════════════════════════════════════════════
     # Step 4: Register nodes
     # ═══════════════════════════════════════════════════════════
-    print(f"\n  ═══ Step 4/5: Register Nodes {'═' * 33}")
+    print_divider("Step 4/5: Register Nodes")
 
     registered = {}
 
@@ -179,7 +186,7 @@ def main():
     # ═══════════════════════════════════════════════════════════
     # Step 5: Fund emission pool & save config
     # ═══════════════════════════════════════════════════════════
-    print(f"\n  ═══ Step 5/5: Finalize {'═' * 39}")
+    print_divider("Step 5/5: Finalize")
 
     # Fund emission pool
     try:
@@ -217,18 +224,34 @@ def main():
         json.dump(new_config, f, indent=4)
     log("💾", "Config updated → config.json")
 
-    # Print summary
-    print(f"\n  ╭── Setup Complete ──────────────────────────────────────────────╮")
-    print(f"  │ {'Name':<12} {'Type':<11} {'UID':<6} {'Hotkey':<44}  │")
-    print(f"  │ {'─'*12} {'─'*11} {'─'*6} {'─'*44}  │")
+    # ── Print summary table ────────────────────────────────────
+    print_divider("Setup Complete ✅")
+
+    table = Table(
+        show_header=True,
+        header_style="bold brand",
+        border_style="dim",
+    )
+    table.add_column("Name", width=12)
+    table.add_column("Type", width=11)
+    table.add_column("UID", justify="right", width=6)
+    table.add_column("Hotkey", width=44)
+
     for name, info in registered.items():
         emoji = "⛏️" if info["type"] == "MINER" else "🔷"
-        print(f"  │ {emoji}{name:<11} {info['type']:<11} {info['uid']:<6} {info['hotkey']:<44}  │")
-    print(f"  ╰──────────────────────────────────────────────────────────────────╯")
-    print(f"\n  Miner coldkey:     {miner_coldkey.address}")
-    print(f"  Validator coldkey: {validator_coldkey.address}")
-    print(f"\n  💡 Next step: python subnet/run_full_demo.py")
-    print()
+        table.add_row(
+            f"{emoji}{name}",
+            info["type"],
+            str(info["uid"]),
+            info["hotkey"],
+        )
+
+    console.print(table)
+
+    print_info(f"Miner coldkey:     {miner_coldkey.address}")
+    print_info(f"Validator coldkey: {validator_coldkey.address}")
+    print_success("💡 Next step: python subnet/run_full_demo.py")
+    console.print()
 
 
 if __name__ == "__main__":

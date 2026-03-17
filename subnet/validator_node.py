@@ -28,6 +28,7 @@ from subnet.base import (
     CFG, NETUID, TASK_DIR,
     TASK_CATALOG,
     log, show_metagraph, get_client, get_deployer,
+    tx_link, EXPLORER_URL,
 )
 from web3 import Web3
 
@@ -40,7 +41,8 @@ MINER_TIMEOUT  = float(os.environ.get("MINER_TIMEOUT", str(CFG["timing"]["miner_
 
 _key = f"validator{VALIDATOR_ID}"
 if _key not in CFG["nodes"]:
-    print(f"  ❌ {_key} not found in config.json")
+    from sdk.cli.ui import print_error as _err
+    _err(f"{_key} not found in config.json")
     sys.exit(1)
 
 VAL_UID = CFG["nodes"][_key]["uid"]
@@ -59,24 +61,27 @@ class ContinuousValidator:
 
     def banner(self):
         """Print startup banner."""
+        from sdk.cli.ui import print_banner
+
         node = self.client.subnet.get_node(NETUID, self.uid)
         sn = self.client.subnet.get_subnet(NETUID)
 
-        print()
-        print("╔" + "═" * 62 + "╗")
-        print(f"║  🔷  ModernTensor VALIDATOR {VALIDATOR_ID}                                ║")
-        print("║  Polkadot Hub Testnet — Continuous Validation Loop            ║")
-        print("╚" + "═" * 62 + "╝")
-        print(f"  Validator UID: {self.uid}")
-        print(f"  Hotkey:        {HOTKEY}")
-        print(f"  Stake:         {node.total_stake_ether:.2f} MDT")
-        print(f"  Trust:         {node.trust_float:.2%}")
-        print(f"  Subnet:        {sn.name} (netuid={NETUID})")
-        print(f"  Nodes:         {sn.node_count} active")
-        print(f"  Tempo:         {sn.tempo} block(s)/epoch")
-        print(f"  Status:        {'🟢 ACTIVE' if node.active else '🔴 INACTIVE'}")
-        print(f"  Block:         {self.client.block_number}")
-        print("─" * 64)
+        print_banner(
+            title=f"ModernTensor VALIDATOR {VALIDATOR_ID}",
+            subtitle="Polkadot Hub Testnet — Continuous Validation Loop",
+            details={
+                "Validator UID": str(self.uid),
+                "Hotkey": HOTKEY,
+                "Stake": f"{node.total_stake_ether:.2f} MDT",
+                "Trust": f"{node.trust_float:.2%}",
+                "Subnet": f"{sn.name} (netuid={NETUID})",
+                "Nodes": f"{sn.node_count} active",
+                "Tempo": f"{sn.tempo} block(s)/epoch",
+                "Status": "🟢 ACTIVE" if node.active else "🔴 INACTIVE",
+                "Block": str(self.client.block_number),
+            },
+            icon="🔷",
+        )
 
     def get_active_miners(self):
         """Get list of active miner UIDs."""
@@ -201,7 +206,9 @@ class ContinuousValidator:
             tx = self.deployer.subnet.set_weights(
                 NETUID, uids, weights, validator_uid=self.uid
             )
-            log("✅", "Weights committed!", tx=tx[:16] + "...")
+            log("✅", "Weights committed!")
+            log("🔗", f"  TX: {tx}")
+            log("🌐", f"  Scan: {tx_link(tx)}")
             for uid, w in zip(uids, weights):
                 log("📈", f"  Miner UID={uid} → weight={w}")
             return True
@@ -215,7 +222,9 @@ class ContinuousValidator:
         try:
             tx = self.deployer.subnet.run_epoch(NETUID)
             self.epoch_count += 1
-            log("🚀", f"═══ EPOCH {self.epoch_count} COMPLETED ═══", tx=tx[:16] + "...")
+            log("🚀", f"═══ EPOCH {self.epoch_count} COMPLETED ═══")
+            log("🔗", f"  TX: {tx}")
+            log("🌐", f"  Scan: {tx_link(tx)}")
 
             # Show emission for each node
             sn = self.client.subnet.get_subnet(NETUID)
@@ -244,8 +253,9 @@ class ContinuousValidator:
                 emission = node.emission_ether
                 tx = self.client.subnet.claim_emission(NETUID, self.uid)
                 self.total_earnings += emission
-                log("💰", f"CLAIMED {emission:.6f} MDT!",
-                    tx=tx[:16] + "...", total=f"{self.total_earnings:.6f}")
+                log("💰", f"CLAIMED {emission:.6f} MDT!", total=f"{self.total_earnings:.6f}")
+                log("🔗", f"  TX: {tx}")
+                log("🌐", f"  Scan: {tx_link(tx)}")
                 return emission
         except Exception as e:
             if "No emission" not in str(e):
@@ -254,25 +264,30 @@ class ContinuousValidator:
 
     def show_status(self):
         """Show validator status summary."""
+        from sdk.cli.ui import print_status_box
+
         try:
             node = self.client.subnet.get_node(NETUID, self.uid)
             uptime = (time.time() - self.start_time) / 60
 
-            print(f"\n  ╭── Validator {VALIDATOR_ID} Status (UID={self.uid}) ──────────────────────╮")
-            print(f"  │  Epochs Completed:  {self.epoch_count:<30}│")
-            print(f"  │  Trust Score:       {node.trust_float:<30.4f}│")
-            print(f"  │  Total Earnings:    {self.total_earnings:<25.6f} MDT│")
-            print(f"  │  Uptime:            {uptime:<25.1f} min│")
-            print(f"  ╰────────────────────────────────────────────────────────────╯")
+            print_status_box(
+                title=f"Validator {VALIDATOR_ID} Status (UID={self.uid})",
+                rows=[
+                    ("Epochs Completed", str(self.epoch_count)),
+                    ("Trust Score",      f"{node.trust_float:.4f}"),
+                    ("Total Earnings",   f"{self.total_earnings:.6f} MDT"),
+                    ("Uptime",           f"{uptime:.1f} min"),
+                ],
+            )
         except Exception:
             pass
 
     def run(self):
         """Main continuous validation loop — runs forever like Bittensor."""
         self.banner()
-        print(f"\n  🔄 Starting continuous validation (every {POLL_INTERVAL}s)")
-        print(f"  💡 Start miners first: python subnet/miner1.py")
-        print(f"  ⏹️  Press Ctrl+C to stop\n")
+        log("🔄", f"Starting continuous validation (every {POLL_INTERVAL}s)")
+        log("💡", "Start miners first: python subnet/miner1.py")
+        log("⏹️", "Press Ctrl+C to stop")
 
         while self.running:
             # ── Step 1: Find active miners ─────────────────────
@@ -283,7 +298,8 @@ class ContinuousValidator:
                 continue
 
             # ── Step 2: Validation round ───────────────────────
-            print(f"\n  ═══ Epoch {self.epoch_count + 1} — Validation Round {'═' * 30}")
+            from sdk.cli.ui import print_divider
+            print_divider(f"Epoch {self.epoch_count + 1} — Validation Round")
             log("👥", f"Active miners: {miner_uids}")
 
             scores = self.run_validation_round(self.epoch_count + 1, miner_uids)
@@ -310,11 +326,11 @@ class ContinuousValidator:
 
     def stop(self):
         self.running = False
-        print(f"\n  ⏹️  Shutting down Validator {VALIDATOR_ID}...")
+        log("⏹️", f"Shutting down Validator {VALIDATOR_ID}...")
         self.claim_rewards()
         self.show_status()
         show_metagraph(self.client)
-        print(f"  👋 Validator {VALIDATOR_ID} stopped.\n")
+        log("👋", f"Validator {VALIDATOR_ID} stopped.")
 
 
 def main():

@@ -15,6 +15,7 @@ import time
 import json
 import signal
 import glob
+import random
 from pathlib import Path
 from datetime import datetime
 
@@ -26,6 +27,7 @@ from subnet.base import (
     CFG, NETUID, TASK_DIR,
     AI_MODELS, generate_zkml_proof,
     log, show_metagraph, get_client, get_deployer,
+    tx_link, EXPLORER_URL,
 )
 
 # ═══════════════════════════════════════════════════════════
@@ -36,7 +38,8 @@ POLL_INTERVAL = float(os.environ.get("POLL_INTERVAL", str(CFG["timing"]["miner_p
 
 _key = f"miner{MINER_ID}"
 if _key not in CFG["nodes"]:
-    print(f"  ❌ {_key} not found in config.json")
+    from sdk.cli.ui import print_error as _err
+    _err(f"{_key} not found in config.json")
     sys.exit(1)
 
 MINER_UID = CFG["nodes"][_key]["uid"]
@@ -57,27 +60,26 @@ class ContinuousMiner:
 
     def banner(self):
         """Print startup banner with on-chain data."""
+        from sdk.cli.ui import print_banner, print_model_list
+
         node = self.client.subnet.get_node(NETUID, self.uid)
         sn = self.client.subnet.get_subnet(NETUID)
 
-        print()
-        print("╔" + "═" * 62 + "╗")
-        print(f"║  ⛏️   ModernTensor MINER {MINER_ID}                                   ║")
-        print("║  Polkadot Hub Testnet — Continuous Mining Loop                ║")
-        print("╚" + "═" * 62 + "╝")
-        print(f"  Miner UID:    {self.uid}")
-        print(f"  Hotkey:       {HOTKEY}")
-        print(f"  Stake:        {node.total_stake_ether:.2f} MDT")
-        print(f"  Trust:        {node.trust_float:.2%}")
-        print(f"  Subnet:       {sn.name} (netuid={NETUID})")
-        print(f"  Status:       {'🟢 ACTIVE' if node.active else '🔴 INACTIVE'}")
-        print(f"  Block:        {self.client.block_number}")
-        print("─" * 64)
-        print()
-        print("  🧠 AI Models loaded:")
-        for domain, model in AI_MODELS.items():
-            print(f"     • {domain:>8}: {model['name']} ({model['params']})")
-        print()
+        print_banner(
+            title=f"ModernTensor MINER {MINER_ID}",
+            subtitle="Polkadot Hub Testnet — Continuous Mining Loop",
+            details={
+                "Miner UID": str(self.uid),
+                "Hotkey": HOTKEY,
+                "Stake": f"{node.total_stake_ether:.2f} MDT",
+                "Trust": f"{node.trust_float:.2%}",
+                "Subnet": f"{sn.name} (netuid={NETUID})",
+                "Status": "🟢 ACTIVE" if node.active else "🔴 INACTIVE",
+                "Block": str(self.client.block_number),
+            },
+            icon="⛏️",
+        )
+        print_model_list(AI_MODELS)
 
     def poll_task(self):
         """Check task queue for pending tasks. Return (task_data, filepath) or None."""
@@ -97,7 +99,8 @@ class ContinuousMiner:
         model = AI_MODELS.get(domain, AI_MODELS["NLP"])
         self.tasks_done += 1
 
-        print(f"\n  ─── Task {self.tasks_done} ────────────────────────────────────────")
+        from sdk.cli.ui import print_divider
+        print_divider(f"Task {self.tasks_done}")
         log("📥", f"TASK RECEIVED from Validator UID={task['validator_uid']}", task_id=task["task_id"])
         log("🎯", f"Domain: {model['name']}", task=task["task_name"])
         log("📝", f"Input: \"{task['input'][:70]}{'...' if len(task['input'])>70 else ''}\"")
@@ -149,7 +152,9 @@ class ContinuousMiner:
                 emission = node.emission_ether
                 tx = self.client.subnet.claim_emission(NETUID, self.uid)
                 self.total_earnings += emission
-                log("💰", f"CLAIMED {emission:.6f} MDT!", tx=tx[:16] + "...", total=f"{self.total_earnings:.6f}")
+                log("💰", f"CLAIMED {emission:.6f} MDT!", total=f"{self.total_earnings:.6f}")
+                log("🔗", f"  TX: {tx}")
+                log("🌐", f"  Scan: {tx_link(tx)}")
                 return emission
         except Exception as e:
             if "No emission" not in str(e):
@@ -158,28 +163,33 @@ class ContinuousMiner:
 
     def show_status(self):
         """Show current miner status summary."""
+        from sdk.cli.ui import print_status_box
+
         try:
             node = self.client.subnet.get_node(NETUID, self.uid)
             uptime = (time.time() - self.start_time) / 60
 
-            print(f"\n  ╭── Miner {MINER_ID} Status (UID={self.uid}) ─────────────────────────╮")
-            print(f"  │  Tasks Completed:   {self.tasks_done:<30}│")
-            print(f"  │  Proofs Generated:  {self.proofs_generated:<30}│")
-            print(f"  │  Trust Score:       {node.trust_float:<30.4f}│")
-            print(f"  │  Rank:              {node.rank_float:<30.6f}│")
-            print(f"  │  Pending Emission:  {node.emission_ether:<30.6f}│")
-            print(f"  │  Total Earnings:    {self.total_earnings:<25.6f} MDT│")
-            print(f"  │  Uptime:            {uptime:<25.1f} min│")
-            print(f"  ╰────────────────────────────────────────────────────────────╯")
+            print_status_box(
+                title=f"Miner {MINER_ID} Status (UID={self.uid})",
+                rows=[
+                    ("Tasks Completed",  str(self.tasks_done)),
+                    ("Proofs Generated", str(self.proofs_generated)),
+                    ("Trust Score",      f"{node.trust_float:.4f}"),
+                    ("Rank",             f"{node.rank_float:.6f}"),
+                    ("Pending Emission", f"{node.emission_ether:.6f}"),
+                    ("Total Earnings",   f"{self.total_earnings:.6f} MDT"),
+                    ("Uptime",           f"{uptime:.1f} min"),
+                ],
+            )
         except Exception:
             pass
 
     def run(self):
         """Main continuous mining loop — runs forever like Bittensor."""
         self.banner()
-        print(f"  🔄 Listening for tasks (polling every {POLL_INTERVAL}s)...")
-        print(f"  💡 Start validators: python subnet/validator1.py")
-        print(f"  ⏹️  Press Ctrl+C to stop\n")
+        log("🔄", f"Listening for tasks (polling every {POLL_INTERVAL}s)")
+        log("💡", "Start validators: python subnet/validator1.py")
+        log("⏹️", "Press Ctrl+C to stop")
 
         check_counter = 0
         while self.running:
@@ -205,11 +215,11 @@ class ContinuousMiner:
 
     def stop(self):
         self.running = False
-        print(f"\n  ⏹️  Shutting down Miner {MINER_ID} (UID={self.uid})...")
+        log("⏹️", f"Shutting down Miner {MINER_ID} (UID={self.uid})...")
         self.try_claim_rewards()
         self.show_status()
         show_metagraph(self.client)
-        print(f"  👋 Miner {MINER_ID} stopped.\n")
+        log("👋", f"Miner {MINER_ID} stopped.")
 
 
 def main():

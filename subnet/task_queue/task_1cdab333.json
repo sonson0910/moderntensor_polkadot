@@ -1,0 +1,24 @@
+{
+  "task_id": "1cdab333",
+  "domain": "Code",
+  "domain_name": "Smart Contract Security",
+  "task_name": "Smart Contract Audit",
+  "input": "function transfer(address to, uint256 amount) external { balances[msg.sender] -= amount; balances[to] += amount; }",
+  "validator_uid": 7,
+  "created_at": "2026-03-17T18:51:53.545805",
+  "status": "completed",
+  "result": {
+    "miner_uid": 5,
+    "model_name": "CodeAuditLLM-v4",
+    "output": "Severity: LOW \u2014 underflow",
+    "confidence": 0.817288144099243,
+    "compute_time": 2.011910480729517,
+    "proof": "dd24e60ec5e2b163ef3cf4a341d7602d33cb967ba99666284cf576040b2e9d0f",
+    "details": {
+      "vulnerability": "delegatecall risk",
+      "fix": "Use SafeMath / OpenZeppelin guards",
+      "lines_affected": 1
+    },
+    "timestamp": "2026-03-17T18:51:57.096607"
+  }
+}
