@@ -8,7 +8,7 @@
 
 ## Abstract
 
-ModernTensor is a next-generation decentralized artificial intelligence network **deployed on Polkadot Hub** via the `pallet-revive` EVM compatibility layer. Originally designed around LuxTensor (a custom Layer-1 blockchain optimized for AI workloads), the protocol now leverages Polkadot's shared security, cross-chain messaging (XCM), and battle-tested EVM infrastructure. The network enables a global marketplace where AI compute providers (miners) are incentivized to contribute computational resources, while validators ensure quality and security through advanced consensus mechanisms. This whitepaper presents the technical architecture, economic model, and governance framework that positions ModernTensor as the infrastructure layer for decentralized AI on Polkadot.
+ModernTensor is a next-generation decentralized artificial intelligence network **deployed on Polkadot Hub** via the `pallet-revive` EVM compatibility layer. The protocol now leverages Polkadot's shared security, cross-chain messaging (XCM), and battle-tested EVM infrastructure. The network enables a global marketplace where AI compute providers (miners) are incentivized to contribute computational resources, while validators ensure quality and security through advanced consensus mechanisms. This whitepaper presents the technical architecture, economic model, and governance framework that positions ModernTensor as the infrastructure layer for decentralized AI on Polkadot.
 
 ---
 
