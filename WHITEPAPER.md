@@ -137,11 +137,7 @@ ModernTensor deploys its complete smart contract stack onto **Polkadot Hub (Asse
 
 The original LuxTensor L1 design serves as the architectural blueprint, while Polkadot Hub provides the production deployment environment.
 
-### 4.1 LuxTensor Architecture (Design Origin)
-
-LuxTensor is a purpose-built Layer-1 blockchain design optimized specifically for decentralized AI infrastructure.
-
-### 4.2 Technical Specifications
+### 4.1 Technical Specifications
 
 | Parameter | Value |
 |-----------|-------|
@@ -152,9 +148,9 @@ LuxTensor is a purpose-built Layer-1 blockchain design optimized specifically fo
 | EVM Compatible | Yes |
 | Native Token | MDT |
 
-### 4.3 Core Features
+### 4.2 Core Features
 
-#### 4.3.1 High-Performance RPC
+#### 4.2.1 High-Performance RPC
 
 The LuxTensor RPC server provides 80+ endpoints for:
 
@@ -164,7 +160,7 @@ The LuxTensor RPC server provides 80+ endpoints for:
 - Staking operations (`staking_*`)
 - AI task submission (`lux_submitAITask`)
 
-#### 4.3.2 Metagraph Storage
+#### 4.2.2 Metagraph Storage
 
 Persistent storage for network state:
 
@@ -173,7 +169,7 @@ Persistent storage for network state:
 - **Weights**: Trust relationships
 - **AI Tasks**: Job queue and results
 
-#### 4.3.3 Smart Contract Support
+#### 4.2.3 Smart Contract Support
 
 Full EVM compatibility enables:
 
@@ -182,7 +178,7 @@ Full EVM compatibility enables:
 - Automated market makers
 - Cross-chain bridges
 
-#### 4.3.4 dApp Platform (Beyond AI Networks)
+#### 4.2.4 dApp Platform (Beyond AI Networks)
 
 Unlike Subtensor (Bittensor's blockchain), LuxTensor is a **general-purpose L1** with AI superpowers:
 
