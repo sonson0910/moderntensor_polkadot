@@ -35,7 +35,7 @@ The convergence of artificial intelligence and blockchain technology presents an
 
 ### 1.1 Vision
 
-To build the world's most robust and accessible decentralized AI infrastructure, enabling anyone to contribute computing power and access AI capabilities without intermediaries.
+To build the world's most robust and accessible decentralized AI infrastructure, enabling anyone to contribute computing power and access AI capabilities without intermediaries. We envision a future where AI computation is transparent, cryptographically verifiable, and fairly rewarded — not gatekept by a handful of centralized providers. By deploying on Polkadot, we leverage shared security and cross-chain interoperability to create an open AI marketplace that grows with the ecosystem.
 
 ### 1.2 Mission
 
@@ -553,6 +553,19 @@ ModernTensor represents a paradigm shift in how AI infrastructure is built, oper
 - **Accessible**: Low barriers to entry for all participants
 
 The future of AI is decentralized. ModernTensor is building it today.
+
+### 12.1 Commitment to Polkadot
+
+The ModernTensor team is **fully committed to building on Polkadot long-term**. Our 8 smart contracts, Python SDK, and subnet infrastructure are designed exclusively for the Polkadot stack via `pallet-revive` — this is not a multi-chain fork or afterthought. We chose Polkadot specifically for its shared security model, EVM compatibility, and growing developer ecosystem.
+
+Our post-hackathon commitments include:
+
+- **Q2 2026**: Security audit of all 8 smart contracts, public testnet launch with real AI model providers
+- **Q3 2026**: Onboard first batch of external miners and validators, launch SDK for JavaScript/Rust
+- **Q4 2026**: Explore XCM integration for cross-parachain AI inference markets
+- **2027+**: Contribute zkML verification tooling back to the Polkadot ecosystem as a public good
+
+We are building ModernTensor on Polkadot not just for this hackathon, but as the long-term foundation for decentralized AI infrastructure.
 
 ---
 
